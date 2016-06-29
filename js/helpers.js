@@ -70,3 +70,12 @@ var urlToLocation = function(url) {
     a.href = url;
     return a;
 }
+
+/*
+ * Sort by multiple keys
+ */
+var cmp = function(a, b) {
+    if (a > b) return +1;
+    if (a < b) return -1;
+    return 0;
+}
