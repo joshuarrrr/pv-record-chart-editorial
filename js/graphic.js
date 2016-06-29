@@ -292,7 +292,7 @@ var renderSlopegraph = function(config) {
     /*
      * Render values.
      */
-    chartElement.append('g')
+    var startValueLabels = chartElement.append('g')
         .attr('class', 'value start')
         .selectAll('text')
         .data(config['data'])
@@ -316,7 +316,7 @@ var renderSlopegraph = function(config) {
                 return d[startColumn].toFixed(1) + '%';
             });
 
-    chartElement.append('g')
+    var endValueLabels = chartElement.append('g')
         .attr('class', 'value end')
         .selectAll('text')
         .data(config['data'])
@@ -343,7 +343,7 @@ var renderSlopegraph = function(config) {
     /*
      * Render labels.
      */
-    chartElement.append('g')
+    var textLabels = chartElement.append('g')
         .attr('class', 'label')
         .selectAll('text')
         .data(config['data'])
@@ -365,8 +365,59 @@ var renderSlopegraph = function(config) {
             })
             .text(function(d) {
                 return d[labelColumn];
-            })
-            .call(wrapText, (margins['right'] - labelGap), 16);
+            });
+            // .call(wrapText, (margins['right'] - labelGap), 16);
+
+
+    // Function for repositioning overlapping labels
+    var alpha = 0.5; // how much to move labels in each iteration
+    var spacing = 14; // miminum space required
+
+    function relax(items) {
+        again = false;
+        items.each(function (d, i) {
+            var a = this;
+            var da = d3.select(a);
+            var y1 = da.attr("y");
+            items.each(function (d, j) {
+                b = this;
+                // a & b are the same element and don't collide.
+                if (a == b) return;
+                db = d3.select(b);
+                // Now let's calculate the distance between
+                // these elements.
+                y2 = db.attr("y");
+                deltaY = y1 - y2;
+
+                // Our spacing is greater than our specified spacing,
+                // so they don't collide.
+                if (Math.abs(deltaY) > spacing) return;
+
+                // If the labels collide, we'll push each
+                // of the two labels up and down a little bit.
+                again = true;
+                sign = deltaY > 0 ? 1 : -1;
+                adjust = sign * alpha;
+                da.attr("y",+y1 + adjust);
+                db.attr("y",+y2 - adjust);
+            });
+        });
+        // Adjust our line leaders here
+        // so that they follow the labels.
+        if(again) {
+            // labelElements = textLabels[0];
+            // textLines.attr("y2",function(d,i) {
+            //     labelForLine = d3.select(labelElements[i]);
+            //     return labelForLine.attr("y");
+            // });
+            setTimeout(relax(items),20)
+        }
+    }
+
+    relax(startValueLabels);
+    relax(endValueLabels);
+    relax(textLabels);
+
 }
 
 /*
