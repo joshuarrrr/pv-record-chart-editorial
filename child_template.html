@@ -24,5 +24,11 @@
     <script type="text/javascript">
         var DATA = {{ COPY.data.json() }};
         var LABELS = {{ COPY.labels.json() }};
+
+        var AIRTABLE_DATA = {};
+
+        {% for sheet in AIRTABLE_DATA %}
+        AIRTABLE_DATA['{{ sheet.name }}'] = {{ sheet.data }};
+        {% endfor %}
     </script>
 {% endblock content %}

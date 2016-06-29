@@ -25,10 +25,45 @@ var onWindowLoaded = function() {
  * Format graphic data for processing by D3.
  */
 var formatData = function() {
+    DATA = AIRTABLE_DATA['records'];
+
+    DATA = d3.nest()
+        .key(function(d) {
+            return d['fields']['Cell type'];
+            // return d['fields']['Cell category'];
+        })
+        .sortValues(function(a,b) {
+            return cmp(a['fields']['Date'],b['fields']['Date']) ||
+                cmp(+a['fields']['Efficiency (%)'],+b['fields']['Efficiency (%)'])
+        })
+        .entries(DATA);
+
     DATA.forEach(function(d) {
-        d['start'] = +d['start'];
-        d['end'] = +d['end'];
+        var cellData = AIRTABLE_DATA['cell-types'].find(function(name) {
+            return name.id === d.key;
+        })['fields'];
+
+        var cellCategory = AIRTABLE_DATA['cell-categories'].find(function(name) {
+                console.log(name);
+                return name.id === cellData['Category'][0];
+            })['fields']['Name'];
+
+        // var cellCategory = AIRTABLE_DATA['cell-categories'].find(function(name) {
+        //         console.log(name);
+        //         return name.id === d.key;
+        //     })['fields']['Name'];
+
+        d['start'] = d3.min(d['values'], function(v)  {
+            return v['fields']['Efficiency (%)'];
+        });
+        d['end'] = d3.max(d['values'], function(v)  {
+            return v['fields']['Efficiency (%)'];
+        });
+        d['label'] = cellCategory + ' - ' + cellData['Cell type'];
+        // d['label'] = cellCategory;
     });
+
+    console.log(DATA);
 }
 
 /*
