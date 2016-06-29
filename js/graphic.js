@@ -114,8 +114,24 @@ var renderSlopegraph = function(config) {
     var endColumn = 'end';
     var categoryColumn = 'category';
 
-    var startLabel = config['labels']['start_label'];
-    var endLabel = config['labels']['end_label'];
+    // var startLabel = config['labels']['start_label'];
+    // var endLabel = config['labels']['end_label'];
+    var startLabel = d3.min(config['data'], function(series) {
+        var minDate = d3.min(series['values'], function(d) {
+            console.log(d);
+            return d['fields']['Date'];
+        });
+
+        return '20' + minDate.slice(-2);
+    })
+    var endLabel = d3.max(config['data'], function(series) {
+        var minDate = d3.max(series['values'], function(d) {
+            console.log(d);
+            return d['fields']['Date'];
+        });
+
+        return '20' + minDate.slice(-2);
+    })
 
     var aspectWidth = 5;
     var aspectHeight = 3;
