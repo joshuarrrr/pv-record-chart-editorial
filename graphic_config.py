@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import base_filters
+import os
 
-COPY_GOOGLE_DOC_KEY = '1leI8_-Al9v3dHFi1-HopDbfetcqr2R9yfnU_RtzHzM8'
+COPY_GOOGLE_DOC_KEY = '1bVZg-06-DUyZH8B9A4tRoeOIMjfNwUYJm6NXHCyW8K8'
 
 AIRTABLE_KEY = os.environ.get('AIRTABLE_ACCESS_KEY')
 
