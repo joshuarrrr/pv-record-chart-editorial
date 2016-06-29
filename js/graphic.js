@@ -59,7 +59,9 @@ var formatData = function() {
         d['end'] = d3.max(d['values'], function(v)  {
             return v['fields']['Efficiency (%)'];
         });
-        d['label'] = cellCategory + ' - ' + cellData['Cell type'];
+        // d['label'] = cellCategory + ' - ' + cellData['Cell type'];
+        d['label'] = cellData['Cell type'];
+        d['category'] = cellCategory;
         // d['label'] = cellCategory;
     });
 
@@ -110,6 +112,7 @@ var renderSlopegraph = function(config) {
     var labelColumn = 'label';
     var startColumn = 'start';
     var endColumn = 'end';
+    var categoryColumn = 'category';
 
     var startLabel = config['labels']['start_label'];
     var endLabel = config['labels']['end_label'];
@@ -173,7 +176,7 @@ var renderSlopegraph = function(config) {
         .range([chartHeight, 0]);
 
     var colorScale = d3.scale.ordinal()
-        .domain(_.pluck(config['data'], labelColumn))
+        .domain(_.pluck(config['data'], categoryColumn))
         .range([ COLORS['red3'], COLORS['yellow3'], COLORS['blue3'], COLORS['orange3'], COLORS['teal3'] ]);
 
     /*
@@ -240,7 +243,7 @@ var renderSlopegraph = function(config) {
                 return yScale(d[endColumn]);
             })
             .style('stroke', function(d) {
-                return colorScale(d[labelColumn])
+                return colorScale(d[categoryColumn])
             });
 
     /*
@@ -268,7 +271,7 @@ var renderSlopegraph = function(config) {
             })
             .attr('r', dotRadius)
             .style('fill', function(d) {
-                return colorScale(d[labelColumn])
+                return colorScale(d[categoryColumn])
             });
 
     chartElement.append('g')
@@ -286,7 +289,7 @@ var renderSlopegraph = function(config) {
             })
             .attr('r', dotRadius)
             .style('fill', function(d) {
-                return colorScale(d[labelColumn])
+                return colorScale(d[categoryColumn])
             });
 
     /*
