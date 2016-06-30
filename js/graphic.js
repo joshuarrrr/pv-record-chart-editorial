@@ -44,7 +44,7 @@ var formatData = function() {
         })['fields'];
 
         var cellCategory = AIRTABLE_DATA['cell-categories'].find(function(name) {
-                console.log(name);
+                // console.log(name);
                 return name.id === cellData['Category'][0];
             })['fields']['Name'];
 
@@ -59,6 +59,7 @@ var formatData = function() {
         d['end'] = d3.max(d['values'], function(v)  {
             return v['fields']['Efficiency (%)'];
         });
+        d['change'] = d['end'] - d['start'];
         // d['label'] = cellCategory + ' - ' + cellData['Cell type'];
         d['label'] = cellData['Cell type'];
         d['category'] = cellCategory;
@@ -113,12 +114,14 @@ var renderSlopegraph = function(config) {
     var startColumn = 'start';
     var endColumn = 'end';
     var categoryColumn = 'category';
+    var changeColumn = 'change';
+    var filteredData = config['data'].filter(function(d) { return d[changeColumn] > 5; });
 
     // var startLabel = config['labels']['start_label'];
     // var endLabel = config['labels']['end_label'];
     var startLabel = d3.min(config['data'], function(series) {
         var minDate = d3.min(series['values'], function(d) {
-            console.log(d);
+            // console.log(d);
             return d['fields']['Date'];
         });
 
@@ -126,7 +129,7 @@ var renderSlopegraph = function(config) {
     })
     var endLabel = d3.max(config['data'], function(series) {
         var minDate = d3.max(series['values'], function(d) {
-            console.log(d);
+            // console.log(d);
             return d['fields']['Date'];
         });
 
@@ -195,6 +198,11 @@ var renderSlopegraph = function(config) {
         .domain(_.pluck(config['data'], categoryColumn))
         .range([ COLORS['red3'], COLORS['yellow3'], COLORS['blue3'], COLORS['orange3'], COLORS['teal3'] ]);
 
+    var changeScale = d3.scale.linear()
+        .domain([0, d3.max(config['data'], function(d) {
+            return d[changeColumn];
+        })])
+        .range([.1,1]);
     /*
      * Create D3 axes.
      */
