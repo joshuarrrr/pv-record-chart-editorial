@@ -241,26 +241,32 @@ var renderSlopegraph = function(config) {
     /*
      * Render lines to chart.
      */
-    chartElement.append('g')
-        .attr('class', 'lines')
-        .selectAll('line')
+    var slopes = chartElement.append('g')
+        .attr('class', 'slopes')
+        .selectAll('.slope')
         .data(config['data'])
         .enter()
-        .append('line')
-            .attr('class', function(d, i) {
-                return 'line ' + classify(d[labelColumn]);
-            })
-            .attr('x1', xScale(startLabel))
-            .attr('y1', function(d) {
-                return yScale(d[startColumn]);
-            })
-            .attr('x2', xScale(endLabel))
-            .attr('y2', function(d) {
-                return yScale(d[endColumn]);
-            })
-            .style('stroke', function(d) {
-                return colorScale(d[categoryColumn])
+        .append('g')
+            .attr('class', 'slope' )
+            .style('opacity', function(d) {
+                return changeScale(d[changeColumn]);
             });
+
+    slopes.append('line')
+        .attr('class', function(d, i) {
+            return 'line ' + classify(d[labelColumn]);
+        })
+        .attr('x1', xScale(startLabel))
+        .attr('y1', function(d) {
+            return yScale(d[startColumn]);
+        })
+        .attr('x2', xScale(endLabel))
+        .attr('y2', function(d) {
+            return yScale(d[endColumn]);
+        })
+        .style('stroke', function(d) {
+            return colorScale(d[categoryColumn])
+        });
 
     /*
      * Uncomment if needed:
@@ -272,51 +278,95 @@ var renderSlopegraph = function(config) {
     /*
      * Render dots to chart.
      */
-    chartElement.append('g')
-        .attr('class', 'dots start')
-        .selectAll('circle')
-        .data(config['data'])
-        .enter()
-        .append('circle')
-            .attr('cx', xScale(startLabel))
-            .attr('cy', function(d) {
-                return yScale(d[startColumn]);
-            })
-            .attr('class', function(d) {
-                return classify(d[labelColumn]);
-            })
-            .attr('r', dotRadius)
-            .style('fill', function(d) {
-                return colorScale(d[categoryColumn])
+    slopes.append('circle')
+        .attr('cx', xScale(startLabel))
+        .attr('cy', function(d) {
+            return yScale(d[startColumn]);
+        })
+        .attr('class', function(d) {
+            return 'start ' + classify(d[labelColumn]);
+        })
+        .attr('r', dotRadius)
+        .style('fill', function(d) {
+            return colorScale(d[categoryColumn])
+        });
+
+    slopes.append('circle')
+        .attr('cx', xScale(endLabel))
+        .attr('cy', function(d) {
+            return yScale(d[endColumn]);
+        })
+        .attr('class', function(d) {
+            return 'end ' + classify(d[labelColumn]);
+        })
+        .attr('r', dotRadius)
+        .style('fill', function(d) {
+            return colorScale(d[categoryColumn])
+        });
+
+    var hovered = false;
+
+    slopes.on('mouseover', function() {
+        var el = d3.select(this);
+        var d = el.datum();
+
+        el
+            .style('opacity', 1);
+
+        if (d[changeColumn] > 5) { 
+            return;
+        }
+        if (hovered === true) {
+            filteredData.pop(d3.select(this).datum());
+            renderLabels();
+        }
+
+        filteredData.push(d);
+        renderLabels();
+        // console.log(filteredData.length);
+
+        hovered = true;
+    });
+
+    slopes.on('mouseout', function() {
+        var el = d3.select(this);
+        var d = el.datum();
+
+        el
+            .style('opacity', function(d) {
+                return changeScale(d[changeColumn]);
             });
 
-    chartElement.append('g')
-        .attr('class', 'dots end')
-        .selectAll('circle')
-        .data(config['data'])
-        .enter()
-        .append('circle')
-            .attr('cx', xScale(endLabel))
-            .attr('cy', function(d) {
-                return yScale(d[endColumn]);
-            })
-            .attr('class', function(d) {
-                return classify(d[labelColumn]);
-            })
-            .attr('r', dotRadius)
-            .style('fill', function(d) {
-                return colorScale(d[categoryColumn])
-            });
+        if (d[changeColumn] > 5) { 
+            return;
+        }
+        if (hovered === true) {
+            filteredData.pop(d3.select(this).datum());
+            renderLabels();
+            // console.log(filteredData.length);
+        }
+        hovered = false;
+    })
 
-    /*
-     * Render values.
-     */
-    var startValueLabels = chartElement.append('g')
+    var startValueGroup = chartElement.append('g')
         .attr('class', 'value start')
-        .selectAll('text')
-        .data(config['data'])
-        .enter()
-        .append('text')
+    var endValueGroup = chartElement.append('g')
+        .attr('class', 'value end')
+    var labelGroup = chartElement.append('g')
+        .attr('class', 'label')
+
+    function renderLabels() {
+        /*
+         * Render values.
+         */
+        var startValueLabels = startValueGroup
+            .selectAll('text')
+            .data(filteredData);
+
+        startValueLabels.enter()
+            .append('text');
+
+        startValueLabels
             .attr('x', xScale(startLabel))
             .attr('y', function(d) {
                 return yScale(d[startColumn]);
@@ -335,12 +385,16 @@ var renderSlopegraph = function(config) {
                 return d[startColumn].toFixed(1) + '%';
             });
 
-    var endValueLabels = chartElement.append('g')
-        .attr('class', 'value end')
-        .selectAll('text')
-        .data(config['data'])
-        .enter()
-        .append('text')
+        startValueLabels.exit().remove();
+
+        var endValueLabels = endValueGroup
+            .selectAll('text')
+            .data(filteredData);
+
+        endValueLabels.enter()
+            .append('text');
+
+        endValueLabels    
             .attr('x', xScale(endLabel))
             .attr('y', function(d) {
                 return yScale(d[endColumn]);
@@ -359,15 +413,19 @@ var renderSlopegraph = function(config) {
                 return d[endColumn].toFixed(1) + '%';
             });
 
-    /*
-     * Render labels.
-     */
-    var textLabels = chartElement.append('g')
-        .attr('class', 'label')
-        .selectAll('text')
-        .data(config['data'])
-        .enter()
-        .append('text')
+        endValueLabels.exit().remove();
+
+        /*
+         * Render labels.
+         */
+        var textLabels = labelGroup
+            .selectAll('text')
+            .data(filteredData);
+
+        textLabels.enter()
+            .append('text');
+
+        textLabels
             .attr('x', xScale(endLabel))
             .attr('y', function(d) {
                 return yScale(d[endColumn]);
@@ -387,55 +445,59 @@ var renderSlopegraph = function(config) {
             });
             // .call(wrapText, (margins['right'] - labelGap), 16);
 
+        textLabels.exit().remove();
 
-    // Function for repositioning overlapping labels
-    var alpha = 0.5; // how much to move labels in each iteration
-    var spacing = 14; // miminum space required
+        // Function for repositioning overlapping labels
+        var alpha = 0.5; // how much to move labels in each iteration
+        var spacing = 14; // miminum space required
 
-    function relax(items) {
-        again = false;
-        items.each(function (d, i) {
-            var a = this;
-            var da = d3.select(a);
-            var y1 = da.attr("y");
-            items.each(function (d, j) {
-                b = this;
-                // a & b are the same element and don't collide.
-                if (a == b) return;
-                db = d3.select(b);
-                // Now let's calculate the distance between
-                // these elements.
-                y2 = db.attr("y");
-                deltaY = y1 - y2;
+        function relax(items) {
+            again = false;
+            items.each(function (d, i) {
+                var a = this;
+                var da = d3.select(a);
+                var y1 = da.attr("y");
+                items.each(function (d, j) {
+                    b = this;
+                    // a & b are the same element and don't collide.
+                    if (a == b) return;
+                    db = d3.select(b);
+                    // Now let's calculate the distance between
+                    // these elements.
+                    y2 = db.attr("y");
+                    deltaY = y1 - y2;
 
-                // Our spacing is greater than our specified spacing,
-                // so they don't collide.
-                if (Math.abs(deltaY) > spacing) return;
+                    // Our spacing is greater than our specified spacing,
+                    // so they don't collide.
+                    if (Math.abs(deltaY) > spacing) return;
 
-                // If the labels collide, we'll push each
-                // of the two labels up and down a little bit.
-                again = true;
-                sign = deltaY > 0 ? 1 : -1;
-                adjust = sign * alpha;
-                da.attr("y",+y1 + adjust);
-                db.attr("y",+y2 - adjust);
+                    // If the labels collide, we'll push each
+                    // of the two labels up and down a little bit.
+                    again = true;
+                    sign = deltaY > 0 ? 1 : -1;
+                    adjust = sign * alpha;
+                    da.attr("y",+y1 + adjust);
+                    db.attr("y",+y2 - adjust);
+                });
             });
-        });
-        // Adjust our line leaders here
-        // so that they follow the labels.
-        if(again) {
-            // labelElements = textLabels[0];
-            // textLines.attr("y2",function(d,i) {
-            //     labelForLine = d3.select(labelElements[i]);
-            //     return labelForLine.attr("y");
-            // });
-            setTimeout(relax(items),20)
+            // Adjust our line leaders here
+            // so that they follow the labels.
+            if(again) {
+                // labelElements = textLabels[0];
+                // textLines.attr("y2",function(d,i) {
+                //     labelForLine = d3.select(labelElements[i]);
+                //     return labelForLine.attr("y");
+                // });
+                setTimeout(relax(items),20)
+            }
         }
+
+        relax(startValueLabels);
+        relax(endValueLabels);
+        relax(textLabels);
     }
 
-    relax(startValueLabels);
-    relax(endValueLabels);
-    relax(textLabels);
+    renderLabels();
 
 }
 
