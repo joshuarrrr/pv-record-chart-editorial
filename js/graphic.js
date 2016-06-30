@@ -60,7 +60,7 @@ var formatData = function() {
             return v['fields']['Efficiency (%)'];
         });
         d['change'] = d['end'] - d['start'];
-        // d['label'] = cellCategory + ' - ' + cellData['Cell type'];
+        d['fullName'] = cellCategory + ' - ' + cellData['Cell type'];
         d['label'] = cellData['Cell type'];
         d['category'] = cellCategory;
         // d['label'] = cellCategory;
@@ -110,11 +110,12 @@ var renderSlopegraph = function(config) {
     /*
      * Setup
      */
-    var labelColumn = 'label';
+    var labelColumn = 'fullName';
     var startColumn = 'start';
     var endColumn = 'end';
     var categoryColumn = 'category';
     var changeColumn = 'change';
+    var fullName = 'fullName';
     var filteredData = config['data'].filter(function(d) { return d[changeColumn] > 5; });
 
     // var startLabel = config['labels']['start_label'];
@@ -321,7 +322,7 @@ var renderSlopegraph = function(config) {
         el
             .style('opacity', 1);
 
-        if (d[changeColumn] > 5) { 
+        if (d[changeColumn] > 5) {
             return;
         }
         if (hovered === true) {
@@ -345,7 +346,7 @@ var renderSlopegraph = function(config) {
                 return changeScale(d[changeColumn]);
             });
 
-        if (d[changeColumn] > 5) { 
+        if (d[changeColumn] > 5) {
             return;
         }
         if (hovered === true) {
@@ -369,10 +370,14 @@ var renderSlopegraph = function(config) {
          */
         var startValueLabels = startValueGroup
             .selectAll('text')
-            .data(filteredData);
+            .data(filteredData, function(d) { return d[fullName]});
 
         startValueLabels.enter()
             .append('text');
+
+        startValueLabels.sort(function(a,b) {
+                return b['start'] - a['start'];
+            });
 
         startValueLabels
             .attr('x', xScale(startLabel))
@@ -397,12 +402,16 @@ var renderSlopegraph = function(config) {
 
         var endValueLabels = endValueGroup
             .selectAll('text')
-            .data(filteredData);
+            .data(filteredData, function(d) { return d[fullName]});
 
         endValueLabels.enter()
             .append('text');
 
-        endValueLabels    
+        endValueLabels.sort(function(a,b) {
+                return b['end'] - a['end'];
+            });
+
+        endValueLabels
             .attr('x', xScale(endLabel))
             .attr('y', function(d) {
                 return yScale(d[endColumn]);
@@ -428,10 +437,14 @@ var renderSlopegraph = function(config) {
          */
         var textLabels = labelGroup
             .selectAll('text')
-            .data(filteredData);
+            .data(filteredData, function(d) { return d[fullName]});
 
         textLabels.enter()
             .append('text');
+
+        textLabels.sort(function(a,b) {
+                return b['end'] - a['end'];
+            });
 
         textLabels
             .attr('x', xScale(endLabel))
@@ -450,14 +463,14 @@ var renderSlopegraph = function(config) {
             })
             .text(function(d) {
                 return d[labelColumn];
-            });
-            // .call(wrapText, (margins['right'] - labelGap), 16);
+            })
+            .call(wrapText, (margins['right'] - labelGap), 16);
 
         textLabels.exit().remove();
 
         // Function for repositioning overlapping labels
         var alpha = 0.5; // how much to move labels in each iteration
-        var spacing = 14; // miminum space required
+        var spacing = 16; // miminum space required
 
         function relax(items) {
             again = false;
@@ -465,19 +478,33 @@ var renderSlopegraph = function(config) {
                 var a = this;
                 var da = d3.select(a);
                 var y1 = da.attr("y");
+                var daChildren = da.selectAll('tspan');
+                var totalSpace;
+                if (daChildren.size() > 0) {
+                    totalSpace = daChildren.size() * spacing;
+                }
+                else {
+                    totalSpace = spacing;
+                }
+
                 items.each(function (d, j) {
-                    b = this;
+                    var b = this;
                     // a & b are the same element and don't collide.
                     if (a == b) return;
-                    db = d3.select(b);
+                    var db = d3.select(b);
+                    var dbChildren = db.selectAll('tspan');
                     // Now let's calculate the distance between
                     // these elements.
                     y2 = db.attr("y");
                     deltaY = y1 - y2;
 
+                    if (deltaY > 0 && dbChildren.size() > 0) {
+                        totalSpace = dbChildren.size() * spacing;
+                    }
+
                     // Our spacing is greater than our specified spacing,
                     // so they don't collide.
-                    if (Math.abs(deltaY) > spacing) return;
+                    if ( Math.abs(deltaY) > totalSpace ) return;
 
                     // If the labels collide, we'll push each
                     // of the two labels up and down a little bit.
@@ -486,6 +513,8 @@ var renderSlopegraph = function(config) {
                     adjust = sign * alpha;
                     da.attr("y",+y1 + adjust);
                     db.attr("y",+y2 - adjust);
+                    daChildren.attr("y",+y1 + adjust);
+                    dbChildren.attr("y",+y2 - adjust);
                 });
             });
             // Adjust our line leaders here
@@ -550,7 +579,7 @@ var wrapText = function(texts, width, lineHeight) {
                     .attr('x', x)
                     .attr('y', y)
                     .attr('dx', dx + 'px')
-                    .attr('dy', lineNumber * lineHeight)
+                    .attr('dy', lineNumber * lineHeight + 'px')
                     .attr('text-anchor', 'begin')
                     .text(word);
             }
