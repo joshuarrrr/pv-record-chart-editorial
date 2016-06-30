@@ -199,11 +199,9 @@ var renderSlopegraph = function(config) {
         .domain(_.pluck(config['data'], categoryColumn))
         .range([ COLORS['red3'], COLORS['yellow3'], COLORS['blue3'], COLORS['orange3'], COLORS['teal3'] ]);
 
-    var changeScale = d3.scale.linear()
-        .domain([0, d3.max(config['data'], function(d) {
-            return d[changeColumn];
-        })])
-        .range([.1,1]);
+    var changeScale = d3.scale.threshold()
+        .domain([2.5, 5])
+        .range([.25,.5,1]);
     /*
      * Create D3 axes.
      */
