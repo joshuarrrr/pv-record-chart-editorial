@@ -201,7 +201,7 @@ var renderSlopegraph = function(config) {
 
     var changeScale = d3.scale.threshold()
         .domain([2.5, 5])
-        .range([.25,.5,1]);
+        .range([.2,.4,1]);
     /*
      * Create D3 axes.
      */
