@@ -5,3 +5,4 @@
 graphic-(header|footer).js
 
 bower_components/*
+!bower.json
