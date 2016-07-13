@@ -29,3 +29,31 @@
     font-size: 11px;
     fill: #333;
 }
+
+.labels li {
+    color: #fff;
+    margin-left: 40px;
+    padding-top: 3px;
+    text-align: left;
+    display: block;
+
+    span {
+        display: inline;
+        padding: 3px 5px;
+        vertical-align: top;
+    }
+
+    &.outside {
+        color: #333;
+        display: table;
+        padding-top: 0;
+    }
+
+    &.outside span {
+        background: none!important;
+        padding-top: 0;
+
+        display: table-cell;
+        vertical-align: middle;
+    }
+}

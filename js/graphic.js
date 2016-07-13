@@ -93,8 +93,19 @@ var render = function(containerWidth) {
     renderSlopegraph({
         container: '#slopegraph',
         width: containerWidth,
-        data: DATA,
+        data: DATA.sort(function(a,b) {
+            return b.end - a.end;
+        }),
         labels: LABELS
+    });
+
+    // Render the chart!
+    renderBarChart({
+        container: '#bar-chart',
+        width: containerWidth,
+        data: DATA.sort(function(a,b) {
+            return b.end - a.end;
+        })
     });
 
     // Update iframe
@@ -122,20 +133,43 @@ var renderSlopegraph = function(config) {
     // var endLabel = config['labels']['end_label'];
     var startLabel = d3.min(config['data'], function(series) {
         var minDate = d3.min(series['values'], function(d) {
-            // console.log(d);
-            return d['fields']['Date'];
+            // console.log(d['fields']['Date']);
+            var minYear = d['fields']['Date'];
+            if ( !minYear ) { return; };
+            minYear = minYear.slice(-2);
+            // console.log(minYear);
+            if( +minYear >= 69) {
+                minYear = +('19' + minYear);
+                // console.log(minYear);
+                // return minYear;
+                return;
+            }
+            else {
+                minYear = +('20' + minYear);
+                // console.log(minYear);
+                return minYear;
+            } 
         });
-
-        return '20' + minDate.slice(-2);
-    })
+        return minDate;
+    });
     var endLabel = d3.max(config['data'], function(series) {
-        var minDate = d3.max(series['values'], function(d) {
-            // console.log(d);
-            return d['fields']['Date'];
+        var maxDate = d3.max(series['values'], function(d) {
+            var maxYear = d['fields']['Date'];
+            if ( !maxYear ) { return; };
+            maxYear = maxYear.slice(-2);
+            if( +maxYear >= 69) {
+                maxYear = +('19' + maxYear);
+                // console.log(maxYear);
+                return maxYear;
+            }
+            else {
+                maxYear = +('20' + maxYear);
+                // console.log(maxYear);
+                return maxYear;
+            } 
         });
-
-        return '20' + minDate.slice(-2);
-    })
+        return maxDate;
+    });
 
     var aspectWidth = 5;
     var aspectHeight = 3;
@@ -244,6 +278,30 @@ var renderSlopegraph = function(config) {
         .attr('class', 'x axis')
         .attr('transform', makeTranslate(0, chartHeight))
         .call(xAxis);
+
+    /*
+     * Render the HTML legend.
+     */
+    d3.select('#legend').html('');
+    var legend = d3.select('#legend')
+        .attr('class', 'key')
+        .selectAll('g')
+        // .data(config['data'])
+        .data(colorScale.domain())
+        .enter().append('li')
+            .attr('class', function(d, i) {
+                return 'key-item ' + classify(d);
+            });
+
+    legend.append('b')
+        .style('background-color', function(d) {
+            return colorScale(d);
+        });
+
+    legend.append('label')
+        .text(function(d) {
+            return d;
+        });
 
     /*
      * Render lines to chart.
@@ -534,6 +592,296 @@ var renderSlopegraph = function(config) {
 
     renderLabels();
 
+}
+
+/*
+ * Render a bar chart.
+ */
+var renderBarChart = function(config) {
+    /*
+     * Setup
+     */
+    var labelColumn = 'fullName';
+    var valueColumn = 'end';
+    var categoryColumn = 'category';
+
+    var barHeight = 40;
+    var barGap = 5;
+    var labelWidth = 220;
+    var labelMargin = 6;
+    var valueGap = 6;
+
+    var margins = {
+        top: 0,
+        right: 15,
+        bottom: 20,
+        // left: (labelWidth + labelMargin)
+        left: 40
+    };
+
+    var ticksX = 4;
+    var roundTicksFactor = 5;
+
+    // Calculate actual chart dimensions
+    var chartWidth = config['width'] - margins['left'] - margins['right'];
+    var chartHeight = ((barHeight + barGap) * config['data'].length);
+
+    if (isMobile) {
+        labelColumn = 'label';
+        labelWidth = chartWidth / 2;
+        // barHeight = 60;
+    }
+
+    // Clear existing graphic (for redraw)
+    var containerElement = d3.select(config['container']);
+    containerElement.html('');
+
+    /*
+     * Create the root SVG element.
+     */
+    var chartWrapper = containerElement.append('div')
+        .attr('class', 'graphic-wrapper');
+
+    var chartElement = chartWrapper.append('svg')
+        .attr('width', chartWidth + margins['left'] + margins['right'])
+        .attr('height', chartHeight + margins['top'] + margins['bottom'])
+        .append('g')
+        .attr('transform', 'translate(' + margins['left'] + ',' + margins['top'] + ')');
+
+    //Pattern injection
+    var pattern = chartElement.append("defs")
+        .append("pattern")
+            .attr({ id:"stripe-pattern", width:"8", height:"8", patternUnits:"userSpaceOnUse", patternTransform:"rotate(60)"})
+        .append("rect")
+            .attr({ width:"2", height:"8", transform:"translate(0,0)", fill:"#fff" });
+    /*
+     * Create D3 scale objects.
+     */
+    var min = d3.min(config['data'], function(d) {
+        return Math.floor(d[valueColumn] / roundTicksFactor) * roundTicksFactor;
+    });
+
+    if (min > 0) {
+        min = 0;
+    }
+
+    var max = d3.max(config['data'], function(d) {
+        return Math.ceil(d[valueColumn] / roundTicksFactor) * roundTicksFactor;
+    })
+
+    var xScale = d3.scale.linear()
+        .domain([min, max])
+        .range([0, chartWidth]);
+
+    var colorScale = d3.scale.ordinal()
+        .domain(_.pluck(config['data'], categoryColumn))
+        .range([ COLORS['red3'], COLORS['yellow3'], COLORS['blue3'], COLORS['orange3'], COLORS['teal3'] ]);
+
+    /*
+     * Create D3 axes.
+     */
+    var xAxis = d3.svg.axis()
+        .scale(xScale)
+        .orient('bottom')
+        .ticks(ticksX)
+        .tickFormat(function(d) {
+            return d.toFixed(0) + '%';
+        });
+
+    /*
+     * Render axes to chart.
+     */
+    chartElement.append('g')
+        .attr('class', 'x axis')
+        .attr('transform', makeTranslate(0, chartHeight))
+        .call(xAxis);
+
+    /*
+     * Render grid to chart.
+     */
+    var xAxisGrid = function() {
+        return xAxis;
+    };
+
+    chartElement.append('g')
+        .attr('class', 'x grid')
+        .attr('transform', makeTranslate(0, chartHeight))
+        .call(xAxisGrid()
+            .tickSize(-chartHeight, 0, 0)
+            .tickFormat('')
+        );
+
+    /*
+     * Render bars to chart.
+     */
+    chartElement.append('g')
+        .attr('class', 'bars')
+        .selectAll('rect')
+        .data(config['data'])
+        .enter()
+        .append('rect')
+            .attr('x', function(d) {
+                if (d[valueColumn] >= 0) {
+                    return xScale(0);
+                }
+
+                return xScale(d[valueColumn]);
+            })
+            .attr('width', function(d) {
+                return Math.abs(xScale(0) - xScale(d[valueColumn]));
+            })
+            .attr('y', function(d, i) {
+                return i * (barHeight + barGap);
+            })
+            .attr('height', barHeight)
+            .attr('class', function(d, i) {
+                return 'bar-' + i + ' ' + classify(d[labelColumn]);
+            })
+            .style('fill', function(d) {
+                return colorScale(d[categoryColumn])
+            });
+
+    /*
+     * Render pattern bars to chart.
+     */
+    chartElement.append('g')
+        .attr('class', 'patterns')
+        .selectAll('rect')
+        .data(config['data'])
+        .enter()
+        .append('rect')
+            .attr('x', function(d) {
+                if (d[valueColumn] >= 0) {
+                    return xScale(0);
+                }
+
+                return xScale(d[valueColumn]);
+            })
+            .attr('width', function(d) {
+                return Math.abs(xScale(0) - xScale(d[valueColumn]));
+            })
+            .attr('y', function(d, i) {
+                return i * (barHeight + barGap);
+            })
+            .attr('height', barHeight)
+            .attr('class', function(d, i) {
+                return 'bar-' + i + ' ' + classify(d[labelColumn]);
+            })
+            .style('fill', function(d) {
+                if ( !d[labelColumn].match(/non-concentrator/) && d[labelColumn].match(/concentrator/) ) {
+                    return 'url(#stripe-pattern)';
+                }
+                else {
+                    return 'rgba(0,0,0,0)'; 
+                }
+                return colorScale(d[categoryColumn])
+            });
+
+    /*
+     * Render 0-line.
+     */
+    if (min < 0) {
+        chartElement.append('line')
+            .attr('class', 'zero-line')
+            .attr('x1', xScale(0))
+            .attr('x2', xScale(0))
+            .attr('y1', 0)
+            .attr('y2', chartHeight);
+    }
+
+    /*
+     * Render bar labels.
+     */
+    chartWrapper.append('ul')
+        .attr('class', 'labels')
+        .attr('style', formatStyle({
+            'width': labelWidth + 'px',
+            'top': margins['top'] + 'px',
+            'left': '0'
+        }))
+        .selectAll('li')
+        .data(config['data'])
+        .enter()
+        .append('li')
+            .attr('style', function(d, i) {
+                if ( xScale(d[valueColumn]) < labelWidth && d[valueColumn] < .5 * chartWidth ) {
+                    return formatStyle({
+                        'width': (chartWidth - xScale(d[valueColumn]) - 32) + 'px',
+                        'height': barHeight + 'px',
+                        'left': (xScale(d[valueColumn]) + 32) + 'px',
+                        'top': (i * (barHeight + barGap)) + 'px;',
+                    });
+                }
+                else {
+                    return formatStyle({
+                        'width': labelWidth + 'px',
+                        'height': barHeight + 'px',
+                        'left': '0px',
+                        'top': (i * (barHeight + barGap)) + 'px;',
+                    });
+                }
+            })
+            .attr('class', function(d) {
+                if ( xScale(d[valueColumn]) < labelWidth && d[valueColumn] < .5 * chartWidth ) {
+                    return classify(d[labelColumn]) + " outside";
+                }
+                else {
+                    return classify(d[labelColumn]);
+                }
+            })
+            .append('span')
+                .text(function(d) {
+                    return d[labelColumn];
+                })
+            .style('background', function(d) {
+                return colorScale(d[categoryColumn])
+            });
+
+    /*
+     * Render bar values.
+     */
+    chartElement.append('g')
+        .attr('class', 'value')
+        .selectAll('text')
+        .data(config['data'])
+        .enter()
+        .append('text')
+            .text(function(d) {
+                return d[valueColumn].toFixed(0) + '%';
+            })
+            .attr('x', function(d) {
+                return xScale(d[valueColumn]);
+            })
+            .attr('y', function(d, i) {
+                return i * (barHeight + barGap);
+            })
+            .attr('dx', function(d) {
+                var xStart = xScale(d[valueColumn]);
+                var textWidth = this.getComputedTextLength()
+
+                // Negative case
+                if (d[valueColumn] < 0) {
+                    var outsideOffset = -(valueGap + textWidth);
+
+                    if (xStart + outsideOffset < 0) {
+                        d3.select(this).classed('in', true)
+                        return valueGap;
+                    } else {
+                        d3.select(this).classed('out', true)
+                        return outsideOffset;
+                    }
+                // Positive case
+                } else {
+                    if (xStart + valueGap + textWidth > chartWidth) {
+                        d3.select(this).classed('in', true)
+                        return -(valueGap + textWidth);
+                    } else {
+                        d3.select(this).classed('out', true)
+                        return valueGap;
+                    }
+                }
+            })
+            .attr('dy', (barHeight / 2) + 3)
 }
 
 /*
