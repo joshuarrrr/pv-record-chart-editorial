@@ -1,0 +1,541 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"mar",
+				"margin-bottom"
+			],
+			[
+				"pad",
+				"padding-bottom"
+			],
+			[
+				"pa",
+				"padding-left"
+			],
+			[
+				"fon",
+				"font-weight"
+			],
+			[
+				"max",
+				"max-width"
+			],
+			[
+				"d3.sele",
+				"d3.selectAll"
+			],
+			[
+				"chartElement.of",
+				"chartElement.offsetTop"
+			],
+			[
+				"el.",
+				"description-Element.id"
+			],
+			[
+				"graphic",
+				"graphic_config"
+			],
+			[
+				"do",
+				"download_airtable_sheets"
+			],
+			[
+				"downl",
+				"download_google_sheet"
+			],
+			[
+				"cons",
+				"console.log()"
+			],
+			[
+				"airtable",
+				"airtable_read_endpoint"
+			],
+			[
+				"font",
+				"font-size"
+			],
+			[
+				"marg",
+				"margin-bottom"
+			],
+			[
+				"padding",
+				"padding-bottom"
+			],
+			[
+				"bloc",
+				"blockquote-border"
+			],
+			[
+				"margin",
+				"margin-top"
+			],
+			[
+				"padd",
+				"padding-left"
+			],
+			[
+				"paddin",
+				"padding-bottom"
+			],
+			[
+				"par",
+				"paragraph-margin-bottom"
+			],
+			[
+				"fo",
+				"font-style"
+			],
+			[
+				"font-",
+				"font-size"
+			],
+			[
+				"inlin",
+				"inline-block"
+			],
+			[
+				"inl",
+				"inline-block"
+			],
+			[
+				"tex",
+				"text-align"
+			],
+			[
+				"te",
+				"text-align"
+			],
+			[
+				"text",
+				"text-align"
+			],
+			[
+				"text-",
+				"text-transform"
+			],
+			[
+				"print",
+				"print_r"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"last_filter": "Inst",
+		"selected_items":
+		[
+			[
+				"Inst",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: Remove Package",
+				"Package Control: Remove Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Enable Package"
+			],
+			[
+				"package control:remove pa",
+				"Package Control: Remove Package"
+			],
+			[
+				"unin",
+				"Plugin Development: Profile Events"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 476.0
+	},
+	"console":
+	{
+		"height": 248.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '2915d1851351e5ee549c20394736b442' + '8bc59f460fa1548d1514676163dafc88'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/josh/graphics/pv-record-chart-editorial/"
+	],
+	"file_history":
+	[
+		"/home/josh/graphics/pv-record-chart/child.html",
+		"/home/josh/.bashrc",
+		"/home/josh/graphics/pv-record-chart/css/base.less",
+		"/home/josh/graphics/pv-record-chart/js/templates.js",
+		"/home/josh/graphics/pv-record-chart/pv-record-chart.sublime-project",
+		"/home/josh/.config/sublime-text-3/Packages/User/SublimeLinter.sublime-settings",
+		"/home/josh/.bash_profile",
+		"/home/josh/Documents/IEEE Spectrum/Fact Checking and Copy Editing Instructions.md",
+		"/home/josh/graphics/test-slopegraph/js/helpers.js",
+		"/home/josh/dailygraphics/records.json",
+		"/home/josh/graphics/test-line-graph/.gitignore",
+		"/home/josh/Downloads/Models Project/js/main.js",
+		"/home/josh/FoundationPress/assets/scss/global/_settings.scss",
+		"/home/josh/FoundationPress/index.php",
+		"/home/josh/FoundationPress/assets/scss/foundation.scss",
+		"/home/josh/Fastpitch/_home.html",
+		"/home/josh/FoundationPress/assets/scss/templates/_front.scss",
+		"/home/josh/FoundationPress/page-templates/front.php",
+		"/home/josh/FoundationPress/page-templates/page-full-width.php",
+		"/home/josh/FoundationPress/page.php",
+		"/home/josh/FoundationPress/single.php",
+		"/home/josh/FoundationPress/header.php",
+		"/home/josh/FoundationPress/assets/scss/modules/_navigation.scss",
+		"/home/josh/FoundationPress/library/navigation.php",
+		"/home/josh/FoundationPress/library/menu-walkers.php",
+		"/home/josh/FoundationPress/library/custom-nav.php",
+		"/home/josh/FoundationPress/assets/scss/templates/_page-default.scss",
+		"/home/josh/FoundationPress/assets/scss/modules/_sidebar.scss",
+		"/home/josh/FoundationPress/library/enqueue-scripts.php",
+		"/home/josh/FoundationPress/assets/fonts/Bernhard_Gothic/Bernhard_Gothic.css",
+		"/home/josh/FoundationPress/template-parts/content.php",
+		"/home/josh/FoundationPress/library/entry-meta.php",
+		"/home/josh/FoundationPress/gulpfile.js",
+		"/home/josh/FoundationPress/package.json",
+		"/home/josh/FoundationPress/assets/scss/modules/_footer.scss",
+		"/home/josh/FoundationPress/template-parts/mobile-top-bar.php",
+		"/home/josh/Fastpitch/wp-config.php",
+		"/home/josh/FoundationPress/footer.php",
+		"/home/josh/FoundationPress/assets/components/foundation-sites/scss/typography/_base.scss",
+		"/home/josh/FoundationPress/assets/components/foundation-sites/scss/typography/_helpers.scss",
+		"/home/josh/FoundationPress/node_modules/gulp-rsync/node_modules/through2/through2.js",
+		"/home/josh/Downloads/MyFontsWebfontsKit/MyFontsWebfontsKit.css",
+		"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/footer.php",
+		"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/assets/scss/style.scss",
+		"/home/josh/Fastpitch/.htaccess.orig",
+		"/home/josh/Fastpitch/.htaccess",
+		"/var/www/html/bookauthor_theme/wp-content/themes/FoundationPress/functions.php",
+		"/var/www/html/bookauthor_theme/wp-content/themes/FoundationPress/template-parts/mobile-top-bar.php",
+		"/var/www/html/bookauthor_theme/wp-content/themes/FoundationPress/library/foundation.php",
+		"/var/www/html/bookauthor_theme/wp-content/themes/FoundationPress/library/menu-walkers.php",
+		"/var/www/html/bookauthor_theme/wp-content/themes/FoundationPress/library/navigation.php",
+		"/var/www/html/bookauthor_theme/wp-content/themes/FoundationPress/assets/components/foundation-sites/scss/components/_top-bar.scss",
+		"/var/www/html/bookauthor_theme/wp-content/themes/FoundationPress/library/custom-nav.php",
+		"/var/www/html/bookauthor_theme/wp-config.php",
+		"/var/www/html/bookauthor_theme/wp-content/themes/FoundationPress/assets/scss/modules/_navigation.scss",
+		"/home/josh/Downloads/blog.html",
+		"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/assets/vendor/foundation-sites/scss/_global.scss",
+		"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/assets/vendor/foundation-sites/scss/foundation.scss",
+		"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/assets/scss/modules/_header.scss",
+		"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/assets/scss/base/_layout.scss",
+		"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/assets/scss/_settings.scss",
+		"/home/josh/bookauthor_theme/Gruntfile.js",
+		"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/assets/scss/_vendors.scss",
+		"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/lib/widgets.php",
+		"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/lib/optimizations.php",
+		"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/sidebar.php",
+		"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/functions.php",
+		"/home/josh/bookauthor_theme/wp-config.php",
+		"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/assets/scss/modules/_accessibility.scss",
+		"/home/josh/bookauthor_theme/node_modules/node-sass/README.md",
+		"/home/josh/bookauthor_theme/bower.json",
+		"/home/josh/bookauthor_theme/.bowerrc",
+		"/home/josh/.config/sublime-text-3/Packages/User/Preferences.sublime-settings",
+		"/home/josh/.themes/Flatty flat/cinnamon/cinnamon.css",
+		"/home/josh/.nvm/nvm.sh",
+		"/home/josh/.config/sublime-text-3/Packages/User/.gitignore",
+		"/home/josh/.config/sublime-text-3/Packages/User/Package Control.sublime-settings"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			"/home/josh/graphics/pv-record-chart",
+			"/home/josh/graphics/pv-record-chart/",
+			"/home/josh/dailygraphics/",
+			"/home/josh/FoundationPress/assets/components/foundation-sites/scss",
+			"/home/josh/FoundationPress/assets/components/foundation-sites/scss/grid",
+			"/home/josh/FoundationPress",
+			"/home/josh/FoundationPress/library",
+			"/home/josh/FoundationPress/assets/components/foundation-sites/scss",
+			"/home/josh/FoundationPress",
+			"/home/josh/FoundationPress/assets/components/foundation-sites/scss/grid",
+			"/home/josh/FoundationPress/assets/scss",
+			"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/lib",
+			"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/assets",
+			"/home/josh/bookauthor_theme/wp-content/themes/bookauthor/assets/vendor/foundation-sites/scss",
+			"/home/josh/bookauthor_theme/wp-content/themes/bookauthor"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"COLORS",
+			"table",
+			"render",
+			"rendertab",
+			"},",
+			", data:",
+			"{ t",
+			"voc",
+			"institu",
+			".join",
+			"references",
+			"group",
+			"sendhe",
+			"sendheig",
+			"pymchild",
+			"pym",
+			"static:54",
+			"static",
+			"margins",
+			"clear",
+			"assets",
+			"USE_ASSETS",
+			"	",
+			"font",
+			"tooltip",
+			"defs",
+			"sun",
+			"jsc",
+			">\n",
+			"rem",
+			"datefo",
+			"clear",
+			"cell type",
+			";\n",
+			"show",
+			"graphi",
+			"fmt",
+			"MOBILE_THRESHOLD",
+			"default_",
+			"default",
+			"\"",
+			"filter",
+			"svg",
+			"transition",
+			"config",
+			"config['data",
+			"datatab",
+			"\");\n",
+			"disp",
+			"ttofse",
+			"tooltip",
+			"svg",
+			"parente",
+			"chartelemen",
+			"chartele",
+			"graphic-",
+			"info",
+			"too",
+			"header",
+			"right",
+			"send",
+			"pymchild",
+			"sendheight",
+			"table",
+			"filtered",
+			"endvaluelab",
+			"filtere",
+			"fil",
+			"filtered",
+			"config",
+			"colorSca",
+			"labels",
+			"attr('y')",
+			".attr('y')",
+			"wrap",
+			"function ",
+			"requests",
+			"context",
+			"copy",
+			"make_context",
+			"context",
+			"airtable",
+			"less",
+			"_base",
+			"compress",
+			"cssin",
+			"less",
+			"reload",
+			"copy_",
+			"continueup",
+			"continue",
+			"update_",
+			"AWS_ACCESS_KEY_ID",
+			"AWS_SECRET",
+			"StaticEl",
+			"ArticleEl",
+			"render_temp",
+			"for",
+			"copy",
+			"max",
+			"xscal",
+			"dataser",
+			"dataseries",
+			"DATA",
+			"render",
+			"config",
+			"date",
+			"Field",
+			"'date'",
+			"onwin",
+			"csv",
+			"DATA",
+			"Placeholder",
+			"bord",
+			"font-size",
+			"background",
+			"'background'",
+			"background",
+			"'background'",
+			"background",
+			"border",
+			"doubl",
+			"section",
+			"-up-",
+			"border",
+			"parti",
+			"double",
+			"block"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 27.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.unsaved_changes":
+	{
+		"height": 148.0
+	},
+	"pinned_build_system": "",
+	"project": "pv-record-chart-editorial.sublime-project",
+	"replace":
+	{
+		"height": 50.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"~/dailygraphics/daily-graphics.sublime-project"
+			]
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 300.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
