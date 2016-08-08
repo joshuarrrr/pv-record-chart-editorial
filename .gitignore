@@ -1,8 +1,8 @@
 *.py[co]
 *.json
 *.xlsx
-
-graphic-(header|footer).js
+/assets/*
 
 bower_components/*
 !bower.json
+*.sublime-workspace
