@@ -386,10 +386,13 @@ var renderSlopegraph = function(config) {
         var el = d3.select(this);
         var d = el.datum();
 
+        d.hovered = true;
+
         el
             .style('opacity', 1);
 
         if (d[changeColumn] > 5) {
+            renderLabels();
             return;
         }
         if (hovered === true) {
@@ -408,12 +411,15 @@ var renderSlopegraph = function(config) {
         var el = d3.select(this);
         var d = el.datum();
 
+        d.hovered = false;
+
         el
             .style('opacity', function(d) {
                 return changeScale(d[changeColumn]);
             });
 
         if (d[changeColumn] > 5) {
+            renderLabels();
             return;
         }
         if (hovered === true) {
@@ -463,6 +469,9 @@ var renderSlopegraph = function(config) {
                 }
 
                 return d[startColumn].toFixed(1) + '%';
+            })
+            .style('font-weight', function(d) {
+                return d.hovered ? 'bold' : 'normal';
             });
 
         startValueLabels.exit().remove();
@@ -495,6 +504,9 @@ var renderSlopegraph = function(config) {
                 }
 
                 return d[endColumn].toFixed(1) + '%';
+            })
+            .style('font-weight', function(d) {
+                return d.hovered ? 'bold' : 'normal';
             });
 
         endValueLabels.exit().remove();
@@ -530,6 +542,9 @@ var renderSlopegraph = function(config) {
             })
             .text(function(d) {
                 return d[labelColumn];
+            })
+            .style('font-weight', function(d) {
+                return d.hovered ? 'bold' : 'normal';
             })
             .call(wrapText, (margins['right'] - labelGap), 16);
 
