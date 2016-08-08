@@ -701,7 +701,8 @@ var renderBarChart = function(config) {
 
     var colorScale = d3.scale.ordinal()
         .domain(_.pluck(config['data'], categoryColumn))
-        .range([ COLORS['red3'], COLORS['yellow3'], COLORS['blue3'], COLORS['orange3'], COLORS['teal3'] ]);
+        .range([COLORS['dark red'], COLORS['dark green'], COLORS['light blue'], COLORS['orange'], COLORS['teal']]);
+        // .range([ COLORS['red3'], COLORS['yellow3'], COLORS['blue3'], COLORS['orange3'], COLORS['teal3'] ]);
 
     /*
      * Create D3 axes.
