@@ -1,3 +1,14 @@
+// Global vars
+/* globals AIRTABLE_DATA:true */
+/* globals DATA:true */
+/* globals LABELS:true */
+/* globals DEFAULT_WIDTH:true */
+/* globals MOBILE_THRESHOLD:true */
+/* globals COLORS:true */
+/* globals fmtComma, fmtYearAbbrev, fmtYearFull */
+/* globals classify, formatStyle, makeTranslate, getParameterByName, urlToLocation, cmp */
+
+
 // Global config
 var SIDEBAR_THRESHOLD = 280;
 
@@ -19,7 +30,7 @@ var onWindowLoaded = function() {
     } else {
         pymChild = new pym.Child({});
     }
-}
+};
 
 /*
  * Format graphic data for processing by D3.
@@ -34,7 +45,7 @@ var formatData = function() {
         })
         .sortValues(function(a,b) {
             return cmp(a['fields']['Date'],b['fields']['Date']) ||
-                cmp(+a['fields']['Efficiency (%)'],+b['fields']['Efficiency (%)'])
+                cmp(+a['fields']['Efficiency (%)'],+b['fields']['Efficiency (%)']);
         })
         .entries(DATA);
 
@@ -67,7 +78,7 @@ var formatData = function() {
     });
 
     console.log(DATA);
-}
+};
 
 /*
  * Render the graphic(s). Called by pym with the container width.
@@ -112,7 +123,7 @@ var render = function(containerWidth) {
     if (pymChild) {
         pymChild.sendHeight();
     }
-}
+};
 
 /*
  * Render a line chart.
@@ -135,7 +146,7 @@ var renderSlopegraph = function(config) {
         var minDate = d3.min(series['values'], function(d) {
             // console.log(d['fields']['Date']);
             var minYear = d['fields']['Date'];
-            if ( !minYear ) { return; };
+            if ( !minYear ) { return; }
             minYear = minYear.slice(-2);
             // console.log(minYear);
             if( +minYear >= 69) {
@@ -155,7 +166,7 @@ var renderSlopegraph = function(config) {
     var endLabel = d3.max(config['data'], function(series) {
         var maxDate = d3.max(series['values'], function(d) {
             var maxYear = d['fields']['Date'];
-            if ( !maxYear ) { return; };
+            if ( !maxYear ) { return; }
             maxYear = maxYear.slice(-2);
             if( +maxYear >= 69) {
                 maxYear = +('19' + maxYear);
@@ -195,7 +206,7 @@ var renderSlopegraph = function(config) {
         margins['right'] = 105;
         labelGap = 32;
     } else if (isMobile) {
-        aspectWidth = 2.5
+        aspectWidth = 2.5;
         aspectHeight = 3;
         margins['right'] = 145;
     }
@@ -213,7 +224,7 @@ var renderSlopegraph = function(config) {
      */
     var xScale = d3.scale.ordinal()
         .domain([startLabel, endLabel])
-        .range([0, chartWidth])
+        .range([0, chartWidth]);
 
     var min = d3.min(config['data'], function(d) {
         var rowMin = d3.min([d[startColumn], d[endColumn]]);
@@ -235,7 +246,7 @@ var renderSlopegraph = function(config) {
 
     var changeScale = d3.scale.threshold()
         .domain([2.5, 5])
-        .range([.2,.4,1]);
+        .range([0.2,0.4,1]);
     /*
      * Create D3 axes.
      */
@@ -330,7 +341,7 @@ var renderSlopegraph = function(config) {
             return yScale(d[endColumn]);
         })
         .style('stroke', function(d) {
-            return colorScale(d[categoryColumn])
+            return colorScale(d[categoryColumn]);
         });
 
     /*
@@ -353,7 +364,7 @@ var renderSlopegraph = function(config) {
         })
         .attr('r', dotRadius)
         .style('fill', function(d) {
-            return colorScale(d[categoryColumn])
+            return colorScale(d[categoryColumn]);
         });
 
     slopes.append('circle')
@@ -366,7 +377,7 @@ var renderSlopegraph = function(config) {
         })
         .attr('r', dotRadius)
         .style('fill', function(d) {
-            return colorScale(d[categoryColumn])
+            return colorScale(d[categoryColumn]);
         });
 
     var hovered = false;
@@ -411,14 +422,14 @@ var renderSlopegraph = function(config) {
             // console.log(filteredData.length);
         }
         hovered = false;
-    })
+    });
 
     var startValueGroup = chartElement.append('g')
-        .attr('class', 'value start')
+        .attr('class', 'value start');
     var endValueGroup = chartElement.append('g')
-        .attr('class', 'value end')
+        .attr('class', 'value end');
     var labelGroup = chartElement.append('g')
-        .attr('class', 'label')
+        .attr('class', 'label');
 
     function renderLabels() {
         /*
@@ -426,7 +437,7 @@ var renderSlopegraph = function(config) {
          */
         var startValueLabels = startValueGroup
             .selectAll('text')
-            .data(filteredData, function(d) { return d[fullName]});
+            .data(filteredData, function(d) { return d[fullName]; });
 
         startValueLabels.enter()
             .append('text');
@@ -458,7 +469,7 @@ var renderSlopegraph = function(config) {
 
         var endValueLabels = endValueGroup
             .selectAll('text')
-            .data(filteredData, function(d) { return d[fullName]});
+            .data(filteredData, function(d) { return d[fullName]; });
 
         endValueLabels.enter()
             .append('text');
@@ -493,7 +504,7 @@ var renderSlopegraph = function(config) {
          */
         var textLabels = labelGroup
             .selectAll('text')
-            .data(filteredData, function(d) { return d[fullName]});
+            .data(filteredData, function(d) { return d[fullName]; });
 
         textLabels.enter()
             .append('text');
@@ -529,11 +540,11 @@ var renderSlopegraph = function(config) {
         var spacing = 16; // miminum space required
 
         function relax(items) {
-            again = false;
+            var again = false;
             items.each(function (d, i) {
                 var a = this;
                 var da = d3.select(a);
-                var y1 = da.attr("y");
+                var y1 = da.attr('y');
                 var daChildren = da.selectAll('tspan');
                 var totalSpace;
                 if (daChildren.size() > 0) {
@@ -551,8 +562,8 @@ var renderSlopegraph = function(config) {
                     var dbChildren = db.selectAll('tspan');
                     // Now let's calculate the distance between
                     // these elements.
-                    y2 = db.attr("y");
-                    deltaY = y1 - y2;
+                    var y2 = db.attr('y');
+                    var deltaY = y1 - y2;
 
                     if (deltaY > 0 && dbChildren.size() > 0) {
                         totalSpace = dbChildren.size() * spacing;
@@ -565,12 +576,12 @@ var renderSlopegraph = function(config) {
                     // If the labels collide, we'll push each
                     // of the two labels up and down a little bit.
                     again = true;
-                    sign = deltaY > 0 ? 1 : -1;
-                    adjust = sign * alpha;
-                    da.attr("y",+y1 + adjust);
-                    db.attr("y",+y2 - adjust);
-                    daChildren.attr("y",+y1 + adjust);
-                    dbChildren.attr("y",+y2 - adjust);
+                    var sign = deltaY > 0 ? 1 : -1;
+                    var adjust = sign * alpha;
+                    da.attr('y',+y1 + adjust);
+                    db.attr('y',+y2 - adjust);
+                    daChildren.attr('y',+y1 + adjust);
+                    dbChildren.attr('y',+y2 - adjust);
                 });
             });
             // Adjust our line leaders here
@@ -581,7 +592,7 @@ var renderSlopegraph = function(config) {
                 //     labelForLine = d3.select(labelElements[i]);
                 //     return labelForLine.attr("y");
                 // });
-                setTimeout(relax(items),20)
+                setTimeout(relax(items),20);
             }
         }
 
@@ -592,7 +603,7 @@ var renderSlopegraph = function(config) {
 
     renderLabels();
 
-}
+};
 
 /*
  * Render a bar chart.
@@ -649,11 +660,11 @@ var renderBarChart = function(config) {
         .attr('transform', 'translate(' + margins['left'] + ',' + margins['top'] + ')');
 
     //Pattern injection
-    var pattern = chartElement.append("defs")
-        .append("pattern")
-            .attr({ id:"stripe-pattern", width:"8", height:"8", patternUnits:"userSpaceOnUse", patternTransform:"rotate(60)"})
-        .append("rect")
-            .attr({ width:"2", height:"8", transform:"translate(0,0)", fill:"#fff" });
+    var pattern = chartElement.append('defs')
+        .append('pattern')
+            .attr({ id:'stripe-pattern', width:'8', height:'8', patternUnits:'userSpaceOnUse', patternTransform:'rotate(60)'})
+        .append('rect')
+            .attr({ width:'2', height:'8', transform:'translate(0,0)', fill:'#fff' });
     /*
      * Create D3 scale objects.
      */
@@ -667,7 +678,7 @@ var renderBarChart = function(config) {
 
     var max = d3.max(config['data'], function(d) {
         return Math.ceil(d[valueColumn] / roundTicksFactor) * roundTicksFactor;
-    })
+    });
 
     var xScale = d3.scale.linear()
         .domain([min, max])
@@ -738,7 +749,7 @@ var renderBarChart = function(config) {
                 return 'bar-' + i + ' ' + classify(d[labelColumn]);
             })
             .style('fill', function(d) {
-                return colorScale(d[categoryColumn])
+                return colorScale(d[categoryColumn]);
             });
 
     /*
@@ -774,7 +785,7 @@ var renderBarChart = function(config) {
                 else {
                     return 'rgba(0,0,0,0)'; 
                 }
-                return colorScale(d[categoryColumn])
+                return colorScale(d[categoryColumn]);
             });
 
     /*
@@ -804,7 +815,7 @@ var renderBarChart = function(config) {
         .enter()
         .append('li')
             .attr('style', function(d, i) {
-                if ( xScale(d[valueColumn]) < labelWidth && d[valueColumn] < .5 * chartWidth ) {
+                if ( xScale(d[valueColumn]) < labelWidth && d[valueColumn] < 0.5 * chartWidth ) {
                     return formatStyle({
                         'width': (chartWidth - xScale(d[valueColumn]) - 32) + 'px',
                         'height': barHeight + 'px',
@@ -822,8 +833,8 @@ var renderBarChart = function(config) {
                 }
             })
             .attr('class', function(d) {
-                if ( xScale(d[valueColumn]) < labelWidth && d[valueColumn] < .5 * chartWidth ) {
-                    return classify(d[labelColumn]) + " outside";
+                if ( xScale(d[valueColumn]) < labelWidth && d[valueColumn] < 0.5 * chartWidth ) {
+                    return classify(d[labelColumn]) + ' outside';
                 }
                 else {
                     return classify(d[labelColumn]);
@@ -834,7 +845,7 @@ var renderBarChart = function(config) {
                     return d[labelColumn];
                 })
             .style('background', function(d) {
-                return colorScale(d[categoryColumn])
+                return colorScale(d[categoryColumn]);
             });
 
     /*
@@ -857,32 +868,32 @@ var renderBarChart = function(config) {
             })
             .attr('dx', function(d) {
                 var xStart = xScale(d[valueColumn]);
-                var textWidth = this.getComputedTextLength()
+                var textWidth = this.getComputedTextLength();
 
                 // Negative case
                 if (d[valueColumn] < 0) {
                     var outsideOffset = -(valueGap + textWidth);
 
                     if (xStart + outsideOffset < 0) {
-                        d3.select(this).classed('in', true)
+                        d3.select(this).classed('in', true);
                         return valueGap;
                     } else {
-                        d3.select(this).classed('out', true)
+                        d3.select(this).classed('out', true);
                         return outsideOffset;
                     }
                 // Positive case
                 } else {
                     if (xStart + valueGap + textWidth > chartWidth) {
-                        d3.select(this).classed('in', true)
+                        d3.select(this).classed('in', true);
                         return -(valueGap + textWidth);
                     } else {
-                        d3.select(this).classed('out', true)
+                        d3.select(this).classed('out', true);
                         return valueGap;
                     }
                 }
             })
-            .attr('dy', (barHeight / 2) + 3)
-}
+            .attr('dy', (barHeight / 2) + 3);
+};
 
 /*
  * Wrap a block of text to a given width
@@ -910,7 +921,7 @@ var wrapText = function(texts, width, lineHeight) {
             .attr('dx', dx + 'px')
             .attr('dy', dy + 'px');
 
-        while (word = words.pop()) {
+        while ( (word = words.pop()) ) {
             line.push(word);
             tspan.text(line.join(' '));
 
@@ -931,7 +942,7 @@ var wrapText = function(texts, width, lineHeight) {
             }
         }
     });
-}
+};
 
 /*
  * Select an element and move it to the front of the stack
