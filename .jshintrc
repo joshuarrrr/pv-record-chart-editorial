@@ -1,0 +1,14 @@
+{
+  "globals": { 
+    "$": false,
+    "_": false,
+    "d3": false,
+    "Modernizr": false,
+    "pym": false
+  },
+  "strict": "implied",
+  "devel": true,
+  "browser": true,
+  "sub": true,
+  "quotmark": true
+}
