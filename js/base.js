@@ -3,7 +3,7 @@
  */
 
 // Global config
-var DEFAULT_WIDTH = 600;
+var DEFAULT_WIDTH = 620;
 var MOBILE_THRESHOLD = 500;
 
 // D3 formatters
