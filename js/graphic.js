@@ -74,6 +74,9 @@ var formatData = function() {
         d['fullName'] = cellCategory + ' - ' + cellData['Cell type'];
         d['label'] = cellData['Cell type'];
         d['category'] = cellCategory;
+        d['description'] = cellData['Technology overview'];
+        d['pros'] = cellData['Advantages'];
+        d['cons'] = cellData['Limitations'];
         // d['label'] = cellCategory;
     });
 
@@ -741,7 +744,7 @@ var renderBarChart = function(config) {
     /*
      * Render bars to chart.
      */
-    chartElement.append('g')
+    var bars = chartElement.append('g')
         .attr('class', 'bars')
         .selectAll('rect')
         .data(config['data'])
@@ -794,6 +797,7 @@ var renderBarChart = function(config) {
             .attr('class', function(d, i) {
                 return 'bar-' + i + ' ' + classify(d[labelColumn]);
             })
+            .attr('pointer-events', 'none')
             .style('fill', function(d) {
                 if ( !d[labelColumn].match(/non-concentrator/) && d[labelColumn].match(/concentrator/) ) {
                     return 'url(#stripe-pattern)';
@@ -909,6 +913,45 @@ var renderBarChart = function(config) {
                 }
             })
             .attr('dy', (barHeight / 2) + 3);
+
+    var ttTemplate = _.template(d3.select('#tooltip-template').html(), {variable: 'record'});
+    var tooltip = chartWrapper.append('div')
+            .classed('tooltip-details', true);
+
+    bars.on('click', function() {
+        var node = this;
+        var selectedData = d3.select(this).datum();
+        console.log(selectedData);
+        var ttWidth = chartWidth;
+        var svgPos = chartElement.node().parentElement.getBoundingClientRect();
+        var matrix = node.getScreenCTM()
+            .translate(+ node.getAttribute('x') - svgPos.left, + node.getAttribute('y') - svgPos.top);
+
+        tooltip
+            .html(ttTemplate(selectedData))
+            .style('max-width', ttWidth + 'px')
+            .style('left', function() {
+                return (window.pageXOffset + matrix.e) + 'px';
+            })
+            .style('top', function() {
+                return (window.pageYOffset + matrix.f + barHeight) + 'px';
+            })
+            .style('width', (chartWidth - 20) + 'px')
+            .style('display', 'block');
+
+        // tooltip
+        //     .select('#select-series').selectAll('option')
+        //     .data(config['data'])
+        // .enter()
+        //     .append('option')
+        //     .attr('value', function (d) { return d.name; })
+        //     .text(function (d) { return d.name; });
+
+        tooltip.select('#close').on('click', function() {
+            d3.event.preventDefault();
+            tooltip.style('display', 'none');
+        });
+    });
 };
 
 /*

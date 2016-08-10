@@ -42,4 +42,24 @@
         AIRTABLE_DATA['{{ sheet.name }}'] = {{ sheet.data }};
         {% endfor %}
     </script>
+
+    <script id="tooltip-template" type="text/html">
+        <div class="meta"><a href="#" id="close">Close</a></div>
+        <div class="details">
+            <h3 class="cell-type">Some type of cell</h3>
+            <p class="description"><%= record.description %></p>
+            <h4>Advantages</h4>
+            <p class="pros"><%= record.pros %></p>
+            <h4>Disadvantages</h4>
+            <p class="cons"><%= record.cons %></p>
+        </div>
+
+        <nav class="tooltip-nav">
+            <div>Navigate Records</div>
+            <!-- <h4>Cell Type:</h4> -->
+            <select name="series" class="select-series" id="select-series"></select>
+            <button class="prev">Previous</button>
+            <button class="next">Next</button>
+        </nav>
+    </script>
 {% endblock content %}

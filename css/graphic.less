@@ -1,6 +1,17 @@
 @import "base";
 @import "font";
 
+.clearfix() {
+  &:before,
+  &:after {
+    content: " "; // 1
+    display: table; // 2
+  }
+  &:after {
+    clear: both;
+  }
+}
+
 .axis {
     fill: #666;
     font-weight: bold;
@@ -31,6 +42,10 @@
     fill: #333;
 }
 
+.labels {
+    pointer-events: none;
+}
+
 .labels li {
     color: #fff;
     margin-left: 40px;
@@ -57,4 +72,85 @@
         display: table-cell;
         vertical-align: middle;
     }
+}
+
+.tooltip-details {
+    border: 1px solid #ddd;
+    // display: none;
+    position: absolute;
+    z-index: 3;
+    background: white;
+    padding: 10px;
+
+    .meta {
+        float: right;
+    }
+
+    .details {
+        // text-align: center;
+    }
+
+    .big-number .big {
+        font-size: 3em;
+    }
+
+    .big-number .small {
+        font-size: 2em;
+    }
+
+    .group {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+
+    .more-details {
+        display: none;
+    }
+
+    ul, ol {
+        padding-left: 1.2em;
+        margin-top: 0;
+    }
+
+    table {
+        width: 100%;
+        text-align: center;
+        border-collapse: collapse;
+        margin: .5em auto;
+    }
+
+    table, th, td {
+        border: 1px #ddd solid;
+    }
+
+    th {
+        background: #ddd;
+    }
+
+    .select-series {
+        display: none;
+        max-width: 100%;
+    }
+
+    .prev {
+        float: left;
+    }
+
+    .next {
+        float: right;
+    }
+
+    .tooltip-nav {
+        display: none;
+        margin-top: .5em;
+        padding-top: .5em;
+        background: #ddd;
+        text-align: center;
+
+        .clearfix();
+    }
+}
+
+.tooltip {
+    pointer-events: none;
 }
