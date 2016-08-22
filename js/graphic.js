@@ -803,7 +803,8 @@ var renderBarChart = function(config) {
                     return 'url(#stripe-pattern)';
                 }
                 else {
-                    return 'rgba(0,0,0,0)'; 
+                    // return 'rgba(0,0,0,0)';
+                    return colorScale(d[categoryColumn]);
                 }
                 return colorScale(d[categoryColumn]);
             });
