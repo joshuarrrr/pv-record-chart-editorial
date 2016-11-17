@@ -64,12 +64,28 @@
     <script id="tooltip-template" type="text/html">
         <div class="meta"><a href="#" id="close">Close</a></div>
         <div class="details">
-            <h3 class="cell-type">Some type of cell</h3>
-            <p class="description"><%= record.description %></p>
-            <h4>Advantages</h4>
-            <p class="pros"><%= record.pros %></p>
-            <h4>Disadvantages</h4>
-            <p class="cons"><%= record.cons %></p>
+            <h4 class="cell-type"><%= record.fullName %></h4>
+            <div class="description"><%= record.description %></div>
+            <% if (record.pros) { %>
+            <div class="bullet-boxes">
+                <h4>Advantages</h4>
+                <ul class="pros">
+                <% _.each(record.pros, function(reference){ %>
+                    <li><%= reference %></li>
+                <% }); %>
+                </ul>
+            </div>
+            <% } %>
+            <% if (record.cons) { %>
+            <div class="bullet-boxes">
+                <h4>Disadvantages</h4>
+                <ul class="cons">
+                <% _.each(record.cons, function(reference){ %>
+                    <li><%= reference %></li>
+                <% }); %>
+                </ul>
+            </div>
+            <% } %>
         </div>
 
         <nav class="tooltip-nav">

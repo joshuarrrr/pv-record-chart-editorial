@@ -87,3 +87,7 @@ var cmp = function(a, b) {
     if (a < b) return -1;
     return 0;
 }
+
+var capitalizeFirstLetter = function (string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+};

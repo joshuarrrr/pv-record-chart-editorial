@@ -6,7 +6,7 @@
 /* globals MOBILE_THRESHOLD:true */
 /* globals COLORS:true */
 /* globals fmtComma, fmtYearAbbrev, fmtYearFull */
-/* globals classify, formatStyle, makeTranslate, getParameterByName, urlToLocation, cmp */
+/* globals classify, formatStyle, makeTranslate, getParameterByName, urlToLocation, cmp, capitalizeFirstLetter */
 
 
 // Global config
@@ -77,10 +77,27 @@ var formatData = function() {
         d['description'] = cellData['Technology overview'];
         d['pros'] = cellData['Advantages'];
         d['cons'] = cellData['Limitations'];
-        // d['label'] = cellCategory;
-    });
 
-    console.log(DATA);
+        if (d['pros']) {
+
+            d['pros'] = d['pros'].trim()
+                .replace(/\s*;\s*$/, '')
+                .split('; ')
+                .map(function(pro) {
+                    return capitalizeFirstLetter(pro);
+                });
+        }
+
+        if (d['cons']) {
+
+            d['cons'] = d['cons'].trim()
+                .replace(/\s*;\s*$/, '')
+                .split('; ')
+                .map(function(pro) {
+                    return capitalizeFirstLetter(pro);
+                });
+        }
+    });
 };
 
 /*
@@ -662,6 +679,9 @@ var renderSlopegraph = function(config) {
     legend.append('b')
         .style('background-color', function(d) {
             return colorScale(d);
+        })
+        .style('border-color', function(d) {
+            return colorScale(d);
         });
 
     legend.append('label')
@@ -991,342 +1011,89 @@ var renderSlopegraph = function(config) {
         relax(startValueLabels);
         relax(endValueLabels);
         relax(textLabels);
+
+
+        var startValueConnectors = connectorsGroup
+            .selectAll('line.start-label-connector')
+            .data(selectedData, function(d) { return d[fullName]; });
+
+        startValueConnectors.enter()
+            .append('line')
+            .classed('start-label-connector', true);
+
+        startValueConnectors.sort(function(a,b) {
+                return b['start'] - a['start'];
+            });
+
+        startValueConnectors
+            .attr('x1', xScale(startLabel) - dotRadius)
+            .attr('x2', xScale(startLabel) - connector - dotRadius)
+            .attr('y1', function(d) {
+                return yScale(d[startColumn]);
+            })
+            .attr('y2', function(d, i) {
+                return d3.select(startValueLabels[0][i]).attr('y');
+            });
+
+        startValueConnectors.exit().remove();
+
+        var endValueConnectors = connectorsGroup
+            .selectAll('line.end-label-connector')
+            .data(selectedData, function(d) { return d[fullName]; });
+
+        endValueConnectors.enter()
+            .append('line')
+            .classed('end-label-connector', true);
+
+        endValueConnectors.sort(function(a,b) {
+                return b['end'] - a['end'];
+            });
+
+        endValueConnectors
+            .attr('x1', xScale(endLabel) + dotRadius)
+            .attr('x2', xScale(endLabel) + connector + dotRadius)
+            .attr('y1', function(d) {
+                return yScale(d[endColumn]);
+            })
+            .attr('y2', function(d, i) {
+                return d3.select(endValueLabels[0][i]).attr('y');
+            });
+
+        endValueConnectors.exit().remove();
+
+        var labelConnectors = connectorsGroup
+            .selectAll('line.label-connector')
+            .data(selectedData, function(d) { return d[fullName]; });
+
+        labelConnectors.enter()
+            .append('line')
+            .classed('label-connector', true);
+
+        labelConnectors.sort(function(a,b) {
+                return b['end'] - a['end'];
+            });
+
+        labelConnectors
+            .attr('x1', xScale(endLabel) + labelGap - connector)
+            .attr('x2', xScale(endLabel) + connector + labelGap)
+            .attr('y1', function(d, i) {
+                return d3.select(endValueLabels[0][i]).attr('y');
+            })
+            .attr('y2', function(d, i) {
+                return d3.select(textLabels[0][i]).attr('y');
+            });
+
+        labelConnectors.exit().remove();
+
+
     }
+
+    config['data'].filter(function (d) { return d[changeColumn] > 7; }).forEach(function(d) {
+        d.selected = true;
+    });
 
     renderLabels();
 
-};
-
-/*
- * Render a bar chart.
- */
-var renderBarChart = function(config) {
-    /*
-     * Setup
-     */
-    var labelColumn = 'fullName';
-    var valueColumn = 'end';
-    var categoryColumn = 'category';
-
-    var barHeight = 40;
-    var barGap = 5;
-    var labelWidth = 220;
-    var labelMargin = 6;
-    var valueGap = 6;
-
-    var margins = {
-        top: 0,
-        right: 15,
-        bottom: 20,
-        // left: (labelWidth + labelMargin)
-        left: 40
-    };
-
-    var ticksX = 4;
-    var roundTicksFactor = 5;
-
-    // Calculate actual chart dimensions
-    var chartWidth = config['width'] - margins['left'] - margins['right'];
-    var chartHeight = ((barHeight + barGap) * config['data'].length);
-
-    if (isMobile) {
-        labelColumn = 'label';
-        labelWidth = chartWidth / 2;
-        // barHeight = 60;
-    }
-
-    // Clear existing graphic (for redraw)
-    var containerElement = d3.select(config['container']);
-    containerElement.html('');
-
-    /*
-     * Create the root SVG element.
-     */
-    var chartWrapper = containerElement.append('div')
-        .attr('class', 'graphic-wrapper');
-
-    var chartElement = chartWrapper.append('svg')
-        .attr('width', chartWidth + margins['left'] + margins['right'])
-        .attr('height', chartHeight + margins['top'] + margins['bottom'])
-        .append('g')
-        .attr('transform', 'translate(' + margins['left'] + ',' + margins['top'] + ')');
-
-    //Pattern injection
-    var pattern = chartElement.append('defs')
-        .append('pattern')
-            .attr({ id:'stripe-pattern', width:'8', height:'8', patternUnits:'userSpaceOnUse', patternTransform:'rotate(60)'})
-        .append('rect')
-            .attr({ width:'2', height:'8', transform:'translate(0,0)', fill:'#fff' });
-    /*
-     * Create D3 scale objects.
-     */
-    var min = d3.min(config['data'], function(d) {
-        return Math.floor(d[valueColumn] / roundTicksFactor) * roundTicksFactor;
-    });
-
-    if (min > 0) {
-        min = 0;
-    }
-
-    var max = d3.max(config['data'], function(d) {
-        return Math.ceil(d[valueColumn] / roundTicksFactor) * roundTicksFactor;
-    });
-
-    var xScale = d3.scale.linear()
-        .domain([min, max])
-        .range([0, chartWidth]);
-
-    var colorScale = d3.scale.ordinal()
-        .domain(_.pluck(config['data'], categoryColumn))
-        .range([COLORS['dark red'], COLORS['dark green'], COLORS['light blue'], COLORS['orange'], COLORS['teal']]);
-        // .range([ COLORS['red3'], COLORS['yellow3'], COLORS['blue3'], COLORS['orange3'], COLORS['teal3'] ]);
-
-    /*
-     * Create D3 axes.
-     */
-    var xAxis = d3.svg.axis()
-        .scale(xScale)
-        .orient('bottom')
-        .ticks(ticksX)
-        .tickFormat(function(d) {
-            return d.toFixed(0) + '%';
-        });
-
-    /*
-     * Render axes to chart.
-     */
-    chartElement.append('g')
-        .attr('class', 'x axis')
-        .attr('transform', makeTranslate(0, chartHeight))
-        .call(xAxis);
-
-    /*
-     * Render grid to chart.
-     */
-    var xAxisGrid = function() {
-        return xAxis;
-    };
-
-    chartElement.append('g')
-        .attr('class', 'x grid')
-        .attr('transform', makeTranslate(0, chartHeight))
-        .call(xAxisGrid()
-            .tickSize(-chartHeight, 0, 0)
-            .tickFormat('')
-        );
-
-    /*
-     * Render bars to chart.
-     */
-    var bars = chartElement.append('g')
-        .attr('class', 'bars')
-        .selectAll('rect')
-        .data(config['data'])
-        .enter()
-        .append('rect')
-            .attr('x', function(d) {
-                if (d[valueColumn] >= 0) {
-                    return xScale(0);
-                }
-
-                return xScale(d[valueColumn]);
-            })
-            .attr('width', function(d) {
-                return Math.abs(xScale(0) - xScale(d[valueColumn]));
-            })
-            .attr('y', function(d, i) {
-                return i * (barHeight + barGap);
-            })
-            .attr('height', barHeight)
-            .attr('class', function(d, i) {
-                return 'bar-' + i + ' ' + classify(d[labelColumn]);
-            })
-            .style('fill', function(d) {
-                return colorScale(d[categoryColumn]);
-            });
-
-    /*
-     * Render pattern bars to chart.
-     */
-    chartElement.append('g')
-        .attr('class', 'patterns')
-        .selectAll('rect')
-        .data(config['data'])
-        .enter()
-        .append('rect')
-            .attr('x', function(d) {
-                if (d[valueColumn] >= 0) {
-                    return xScale(0);
-                }
-
-                return xScale(d[valueColumn]);
-            })
-            .attr('width', function(d) {
-                return Math.abs(xScale(0) - xScale(d[valueColumn]));
-            })
-            .attr('y', function(d, i) {
-                return i * (barHeight + barGap);
-            })
-            .attr('height', barHeight)
-            .attr('class', function(d, i) {
-                return 'bar-' + i + ' ' + classify(d[labelColumn]);
-            })
-            .attr('pointer-events', 'none')
-            .style('fill', function(d) {
-                if ( !d[labelColumn].match(/non-concentrator/) && d[labelColumn].match(/concentrator/) ) {
-                    return 'url(#stripe-pattern)';
-                }
-                else {
-                    // return 'rgba(0,0,0,0)';
-                    return colorScale(d[categoryColumn]);
-                }
-                return colorScale(d[categoryColumn]);
-            });
-
-    /*
-     * Render 0-line.
-     */
-    if (min < 0) {
-        chartElement.append('line')
-            .attr('class', 'zero-line')
-            .attr('x1', xScale(0))
-            .attr('x2', xScale(0))
-            .attr('y1', 0)
-            .attr('y2', chartHeight);
-    }
-
-    /*
-     * Render bar labels.
-     */
-    chartWrapper.append('ul')
-        .attr('class', 'labels')
-        .attr('style', formatStyle({
-            'width': labelWidth + 'px',
-            'top': margins['top'] + 'px',
-            'left': '0'
-        }))
-        .selectAll('li')
-        .data(config['data'])
-        .enter()
-        .append('li')
-            .attr('style', function(d, i) {
-                if ( xScale(d[valueColumn]) < labelWidth && d[valueColumn] < 0.5 * chartWidth ) {
-                    return formatStyle({
-                        'width': (chartWidth - xScale(d[valueColumn]) - 32) + 'px',
-                        'height': barHeight + 'px',
-                        'left': (xScale(d[valueColumn]) + 32) + 'px',
-                        'top': (i * (barHeight + barGap)) + 'px;',
-                    });
-                }
-                else {
-                    return formatStyle({
-                        'width': labelWidth + 'px',
-                        'height': barHeight + 'px',
-                        'left': '0px',
-                        'top': (i * (barHeight + barGap)) + 'px;',
-                    });
-                }
-            })
-            .attr('class', function(d) {
-                if ( xScale(d[valueColumn]) < labelWidth && d[valueColumn] < 0.5 * chartWidth ) {
-                    return classify(d[labelColumn]) + ' outside';
-                }
-                else {
-                    return classify(d[labelColumn]);
-                }
-            })
-            .append('span')
-                .text(function(d) {
-                    return d[labelColumn];
-                })
-            .style('background', function(d) {
-                return colorScale(d[categoryColumn]);
-            });
-
-    /*
-     * Render bar values.
-     */
-    chartElement.append('g')
-        .attr('class', 'value')
-        .selectAll('text')
-        .data(config['data'])
-        .enter()
-        .append('text')
-            .text(function(d) {
-                return d[valueColumn].toFixed(0) + '%';
-            })
-            .attr('x', function(d) {
-                return xScale(d[valueColumn]);
-            })
-            .attr('y', function(d, i) {
-                return i * (barHeight + barGap);
-            })
-            .attr('dx', function(d) {
-                var xStart = xScale(d[valueColumn]);
-                var textWidth = this.getComputedTextLength();
-
-                // Negative case
-                if (d[valueColumn] < 0) {
-                    var outsideOffset = -(valueGap + textWidth);
-
-                    if (xStart + outsideOffset < 0) {
-                        d3.select(this).classed('in', true);
-                        return valueGap;
-                    } else {
-                        d3.select(this).classed('out', true);
-                        return outsideOffset;
-                    }
-                // Positive case
-                } else {
-                    if (xStart + valueGap + textWidth > chartWidth) {
-                        d3.select(this).classed('in', true);
-                        return -(valueGap + textWidth);
-                    } else {
-                        d3.select(this).classed('out', true);
-                        return valueGap;
-                    }
-                }
-            })
-            .attr('dy', (barHeight / 2) + 3);
-
-    var ttTemplate = _.template(d3.select('#tooltip-template').html(), {variable: 'record'});
-    var tooltip = chartWrapper.append('div')
-            .classed('tooltip-details', true);
-
-    bars.on('click', function() {
-        var node = this;
-        var selectedData = d3.select(this).datum();
-        console.log(selectedData);
-        var ttWidth = chartWidth;
-        var svgPos = chartElement.node().parentElement.getBoundingClientRect();
-        var matrix = node.getScreenCTM()
-            .translate(+ node.getAttribute('x') - svgPos.left, + node.getAttribute('y') - svgPos.top);
-
-        tooltip
-            .html(ttTemplate(selectedData))
-            .style('max-width', ttWidth + 'px')
-            .style('left', function() {
-                return (window.pageXOffset + matrix.e) + 'px';
-            })
-            .style('top', function() {
-                return (window.pageYOffset + matrix.f + barHeight) + 'px';
-            })
-            .style('width', (chartWidth - 20) + 'px')
-            .style('display', 'block');
-
-        // tooltip
-        //     .select('#select-series').selectAll('option')
-        //     .data(config['data'])
-        // .enter()
-        //     .append('option')
-        //     .attr('value', function (d) { return d.name; })
-        //     .text(function (d) { return d.name; });
-
-        tooltip.select('#close').on('click', function() {
-            d3.event.preventDefault();
-            tooltip.style('display', 'none');
-        });
-    });
 };
 
 /*
