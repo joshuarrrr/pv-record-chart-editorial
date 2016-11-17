@@ -104,8 +104,8 @@ var render = function(containerWidth) {
     }
 
     // Render the chart!
-    renderSlopegraph({
-        container: '#slopegraph',
+    renderDotChart({
+        container: '#dot-chart',
         width: containerWidth,
         data: DATA.sort(function(a,b) {
             return b.end - a.end;
@@ -114,8 +114,8 @@ var render = function(containerWidth) {
     });
 
     // Render the chart!
-    renderBarChart({
-        container: '#bar-chart',
+    renderSlopegraph({
+        container: '#slopegraph',
         width: containerWidth,
         data: DATA.sort(function(a,b) {
             return b.end - a.end;
@@ -126,6 +126,358 @@ var render = function(containerWidth) {
     if (pymChild) {
         pymChild.sendHeight();
     }
+};
+
+/*
+ * Render a dot chart.
+ */
+var renderDotChart = function(config) {
+    /*
+     * Setup
+     */
+    var labelColumn = 'category';
+    var valueColumn = 'end';
+    var minColumn = 'start';
+    var maxColumn = 'end';
+
+    var barHeight = 20;
+    var barGap = 20;
+    var labelWidth = 140;
+    var labelMargin = 10;
+    var valueMinWidth = 30;
+    var dotRadius = 5;
+    var strokeWidth = 1;
+    var outerDiameter = (dotRadius + strokeWidth) * 2;
+
+    var margins = {
+        top: 0,
+        right: 15,
+        bottom: 20,
+        left: (labelMargin)
+    };
+
+    var ticksX = 4;
+    var roundTicksFactor = 5;
+
+    if (isMobile) {
+        ticksX = 6;
+        margins['left'] = labelMargin * 2;
+        dotRadius = 10;
+        outerDiameter = (dotRadius + strokeWidth) * 2;
+        // margins['right'] = 30;
+    }
+    // console.log(config.data);
+
+    // console.log(config['data'].reduce(function(a,b) {return a.length + b.length; }, 0));
+
+    // Calculate actual chart dimensions
+    var chartWidth = config['width'] - margins['left'] - margins['right'];
+    var chartHeight = ((outerDiameter) * config['data'].reduce(function(a,b) {
+        return a + b.length;
+    }, 0)) + (config['data'].length * barGap);
+
+    // Clear existing graphic (for redraw)
+    var containerElement = d3.select(config['container']);
+    containerElement.html('');
+    containerElement.classed('mobile', isMobile);
+
+    /*
+     * Create the root SVG element.
+     */
+    var chartWrapper = containerElement.append('div')
+        .attr('class', 'graphic-wrapper');
+
+    var chartElement = chartWrapper.append('svg')
+        .attr('width', chartWidth + margins['left'] + margins['right'])
+        .attr('height', chartHeight + margins['top'] + margins['bottom'])
+        .append('g')
+        .attr('transform', 'translate(' + margins['left'] + ',' + margins['top'] + ')');
+
+    /*
+     * Create D3 scale objects.
+     */
+    var min = 0;
+    var max = d3.max(config['data'], function(d) {
+        var catMax = d3.max(d, function(d) { return d[maxColumn]; });
+        return Math.ceil(catMax / roundTicksFactor) * roundTicksFactor;
+    });
+
+    var xScale = d3.scale.linear()
+        .domain([min, max])
+        .range([0, chartWidth]);
+
+    // console.log(_.map(config['data'], function(d) { console.log(d); return d[0].labelColumn; }));
+    var colorScale = d3.scale.ordinal()
+        .domain(_.map(config['data'], function(d) {
+            return d[0][labelColumn];
+        })
+        .sort(function(a,b) {
+            return a.localeCompare(b);
+        }))
+        .range([COLORS['orange'], COLORS['dark red'], COLORS['light blue'], COLORS['teal'], COLORS['dark green']]);
+
+    /*
+     * Render the HTML legend.
+     */
+    d3.select('#dot-legend').html('');
+    var legend = d3.select('#dot-legend')
+        .attr('class', 'key')
+        .selectAll('g')
+        // .data(config['data'])
+        // .data(colorScale.domain())
+        .data(['concentrator','non-concentrator'])
+        .enter().append('li')
+            .attr('class', function(d, i) {
+                return 'key-item ' + classify(d);
+            });
+
+    legend.append('b')
+        .style('background-color', function(d) {
+            return d === 'non-concentrator' ? COLORS['white'] : COLORS['black'];
+        })
+        .style('border-color', function(d) {
+            return COLORS['black'];
+        });
+
+    legend.append('label')
+        .text(function(d) {
+            return d;
+        });
+
+    /*
+     * Create D3 axes.
+     */
+    var xAxis = d3.svg.axis()
+        .scale(xScale)
+        .orient('bottom')
+        .ticks(ticksX)
+        .tickFormat(function(d) {
+            return d + '%';
+        });
+
+    /*
+     * Render axes to chart.
+     */
+    chartElement.append('g')
+        .attr('class', 'x axis')
+        .attr('transform', makeTranslate(0, chartHeight))
+        .call(xAxis);
+
+    /*
+     * Render grid to chart.
+     */
+    var xAxisGrid = function() {
+        return xAxis;
+    };
+
+    chartElement.append('g')
+        .attr('class', 'x grid')
+        .attr('transform', makeTranslate(0, chartHeight))
+        .call(xAxisGrid()
+            .tickSize(-chartHeight, 0, 0)
+            .tickFormat('')
+        );
+
+    /*
+     * Render range bars to chart.
+     */
+    // chartElement.append('g')
+    //     .attr('class', 'bars')
+    //     .selectAll('line')
+    //     .data(config['data'])
+    //     .enter()
+    //     .append('line')
+    //         .attr('x1', function(d, i) {
+    //             return xScale(d[minColumn]);
+    //         })
+    //         .attr('x2', function(d, i) {
+    //             return xScale(d[maxColumn]);
+    //         })
+    //         .attr('y1', function(d, i) {
+    //             return i * (barHeight + barGap) + (barHeight / 2);
+    //         })
+    //         .attr('y2', function(d, i) {
+    //             return i * (barHeight + barGap) + (barHeight / 2);
+    //         });
+
+    /*
+     * Render dots to chart.
+     */
+    var dotGroups = chartElement
+        .selectAll('.dots')
+        .data(config['data'])
+        .enter().append('g')
+        .attr('class', 'dots')
+        .attr('transform', function(d, i) {
+            return makeTranslate(0, (config['data'].slice(0, i).reduce(function(a,b) {
+                return a + b.length;
+            }, 0) * outerDiameter) + ((i + 1) * barGap));
+        });
+
+    var dots = dotGroups.selectAll('circle')
+        .data(function(d) { return d; })
+        .enter().append('circle')
+            .classed('dot', true)
+            .attr('pointer-events', 'visible')
+            .attr('cx', function(d, i) {
+                // console.log(d);
+                // console.log(d[valueColumn]);
+                return xScale(d[valueColumn]);
+            })
+            .attr('cy', function(d, i) {
+                return (i * outerDiameter) + dotRadius;
+            })
+            .attr('r', dotRadius)
+            .style('fill', 'none')
+            .style('stroke', function(d) {
+                return colorScale(d[labelColumn]);
+            })
+            .style('stroke-width', strokeWidth + 'px');
+
+    dots.filter(function(d) {
+            return d['fields']['Concentrator'];
+        })
+        .style('fill', function(d) {
+            // console.log(colorScale.domain());
+            return colorScale(d[labelColumn]);
+        });
+
+    /*
+     * Render bar labels.
+     */
+    containerElement
+        .append('ul')
+        .attr('class', 'labels')
+        .attr('style', formatStyle({
+            'width': labelWidth + 'px',
+            'top': margins['top'] + 'px',
+            'left': '0'
+        }))
+        .selectAll('li')
+        .data(config['data'])
+        .enter()
+        .append('li')
+            .attr('style', function(d, i) {
+                return formatStyle({
+                    'width': labelWidth + 'px',
+                    'height': barHeight + 'px',
+                    'left': '0px',
+                    'top': (config['data'].slice(0, i).reduce(function(a,b) {
+                        return a + b.length;
+                    }, 0) * outerDiameter) + ((i + 1) * barGap) + ((d.length - 1) * dotRadius) - 2 + 'px;',
+                    'margin-left': isMobile ? 0 : margins['left'] + 'px'
+                });
+            })
+            .attr('class', function(d) {
+                return classify(d[0][labelColumn]);
+            })
+            .append('span')
+                .text(function(d) {
+                    return d[0][labelColumn];
+                })
+                .style('border-color', function(d) {
+                    return colorScale(d[0][labelColumn]);
+                });
+
+    var ttTemplate = _.template(d3.select('#tooltip-template').html(), {variable: 'record'});
+    var tooltip = chartWrapper.append('div')
+            .classed('tooltip-details', true);
+
+    d3.select(chartElement.node().parentElement).on('click', function(){
+        tooltip.style('display', 'none');
+    });
+
+    dots.on('mouseover', function() {
+        var el = d3.select(this);
+        var selectedData = el.datum();
+        var offset = 15;
+        // var dateFormat = d3.time.format('%b %Y');
+
+        if (isMobile) {
+            return;
+        }
+
+        d3.selectAll('.tooltip')
+            .remove();
+
+        dots
+            .attr('r', dotRadius);
+
+        el
+            .attr('r', dotRadius * 1.5 );
+
+        var ttText = d3.select(el.node().parentNode).append('g')
+            .attr('class', 'tooltip')
+            .append('text')
+                // .attr('filter', 'url(#solid)')
+                .attr('text-anchor', function() {
+                    return xScale(selectedData[valueColumn]) > (chartWidth / 2) ? 'end' : 'start';
+                })
+                .attr('dx', function() {
+                    return xScale(selectedData[valueColumn]) > (chartWidth / 2) ? (- offset) : offset;
+                })
+                .attr('dy', 3)
+                .attr('x', this.getAttribute('cx'))
+                .attr('y', this.getAttribute('cy'))
+                .text(selectedData['label']);
+
+        var bbox = ttText.node().getBBox();
+        var padding = {w:3, h:1};
+        var rect = d3.select('.tooltip').insert('rect', 'text')
+            .attr('class', 'tt-background')
+            .attr('x', bbox.x - padding.w)
+            .attr('y', bbox.y - padding.h)
+            .attr('width', bbox.width + (padding.w*2))
+            .attr('height', bbox.height + (padding.h*2))
+            .style('fill', 'white')
+            .style('stroke', '#ddd')
+            .style('width', (bbox.width + (padding.w*2)) + 'px')
+            .style('height', (bbox.height + (padding.h*2)) + 'px');
+    });
+
+    dots.on('mouseout', function() {
+
+    });
+
+    dots.on('click', function() {
+        d3.event.stopPropagation();
+
+        var node = this;
+        var selectedData = d3.select(this).datum();
+        // console.log(selectedData);
+        var ttWidth = chartWidth;
+        var svgPos = chartElement.node().parentElement.getBoundingClientRect();
+        var matrix = node.getScreenCTM()
+            .translate(+ node.getAttribute('x') - svgPos.left, + node.getAttribute('y') + node.getAttribute('cy') - svgPos.top);
+
+        tooltip
+            .html(ttTemplate(selectedData))
+            .classed('split', !isMobile)
+            .style('max-width', ttWidth + 'px')
+            .style('left', function() {
+                return (window.pageXOffset + matrix.e) + 'px';
+            })
+            .style('top', function() {
+                return (window.pageYOffset + matrix.f + dotRadius) + 'px';
+            })
+            .style('width', (chartWidth - 20) + 'px')
+            .style('display', 'block');
+
+        // tooltip
+        //     .select('#select-series').selectAll('option')
+        //     .data(config['data'])
+        // .enter()
+        //     .append('option')
+        //     .attr('value', function (d) { return d.name; })
+        //     .text(function (d) { return d.name; });
+
+        tooltip.select('#close').on('click', function() {
+            d3.event.preventDefault();
+            tooltip.style('display', 'none');
+        });
+
+        pymChild.sendHeight();
+    });
 };
 
 /*
@@ -357,6 +709,28 @@ var renderSlopegraph = function(config) {
     /*
      * Render dots to chart.
      */
+    slopes.append('circle')
+        .attr('cx', xScale(startLabel))
+        .attr('cy', function(d) {
+            return yScale(d[startColumn]);
+        })
+        .attr('class', 'invisible')
+        .attr('r', dotRadius * 3)
+        .style('fill', function(d) {
+            return colorScale(d[categoryColumn]);
+        });
+
+    slopes.append('circle')
+        .attr('cx', xScale(endLabel))
+        .attr('cy', function(d) {
+            return yScale(d[endColumn]);
+        })
+        .attr('class', 'invisible')
+        .attr('r', dotRadius * 3)
+        .style('fill', function(d) {
+            return colorScale(d[categoryColumn]);
+        });
+
     slopes.append('circle')
         .attr('cx', xScale(startLabel))
         .attr('cy', function(d) {

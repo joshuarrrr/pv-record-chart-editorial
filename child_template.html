@@ -6,17 +6,11 @@
     {% if COPY.labels.subhed %}<h2>{{ render(COPY.labels.subhed)|smarty }}</h2>{% endif %} -->
     {% if COPY.labels['editorial-intro'] %}<div class="intro">{{ render(COPY.labels['editorial-intro'])|smarty }}</div>{% endif %}
     
-    <h3>Categories of PV Cells</h3>
-    <div id="legend"></div>
-
-    <h3>Efficiency Improvements</h3>
-    <div id="slopegraph" class="graphic">
-        <img src="fallback.png" alt="[Chart]" class="fallback" />
-    </div>
-    
-    <h3>Most Efficient PV Cell Types</h3>
-    <div id="bar-chart">
-        <img src="bar-fallback.png" alt="[Chart]" class="fallback" />
+    <h3>Current Record Efficiencies</h3>
+    {% if COPY.labels['instructions-dot'] %}<div>{{ render(COPY.labels['instructions-dot'])|smarty }}</div>{% endif %}
+    <div id="dot-legend"></div>
+    <div id="dot-chart">
+        <img src="dot-fallback.png" alt="[Chart]" class="fallback" />
     </div>
 
     {% if COPY.labels.footnote %}
@@ -30,6 +24,31 @@
         {% if COPY.labels.source %}<p>Source: {{ COPY.labels.source|smarty }}</p>{% endif %}
         {% if COPY.labels.credit %}<p>Credit: {{ COPY.labels.credit|smarty }}</p>{% endif %}
     </div>
+
+    {% if COPY.labels['editorial-categories'] %}<div class="intro">{{ render(COPY.labels['editorial-categories'])|smarty }}</div>{% endif %}
+
+<!--     <h3>Most Efficient PV Cell Types</h3>
+    <div id="bar-chart">
+        <img src="bar-fallback.png" alt="[Chart]" class="fallback" />
+    </div> -->
+
+    <h3>Efficiency Improvements</h3>
+    {% if COPY.labels['instructions-slope'] %}<div>{{ render(COPY.labels['instructions-slope'])|smarty }}</div>{% endif %}
+    <div id="legend"></div>
+    <div id="slopegraph" class="graphic">
+        <img src="slope-fallback.png" alt="[Chart]" class="fallback" />
+    </div>
+
+    {% if COPY.labels['footnote-slope'] %}
+    <div class="footnotes">{{ COPY.labels['footnote-slope']|smarty }}</div>
+    {% endif %}
+
+    <div class="footer">
+        {% if COPY.labels.source %}<p>Source: {{ COPY.labels.source|smarty }}</p>{% endif %}
+        {% if COPY.labels.credit %}<p>Credit: {{ COPY.labels.credit|smarty }}</p>{% endif %}
+    </div>
+
+    {% if COPY.labels['editorial-trends'] %}<div class="intro">{{ render(COPY.labels['editorial-trends'])|smarty }}</div>{% endif %}
 
     <script type="text/javascript">
         var DATA = {{ COPY.data.json() }};
