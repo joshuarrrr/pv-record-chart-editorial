@@ -36,40 +36,17 @@ var onWindowLoaded = function() {
  * Format graphic data for processing by D3.
  */
 var formatData = function() {
-    DATA = AIRTABLE_DATA['records'];
-
-    DATA = d3.nest()
-        .key(function(d) {
-            return d['fields']['Cell type'];
-            // return d['fields']['Cell category'];
-        })
-        .sortValues(function(a,b) {
-            return cmp(a['fields']['Date'],b['fields']['Date']) ||
-                cmp(+a['fields']['Efficiency (%)'],+b['fields']['Efficiency (%)']);
-        })
-        .entries(DATA);
+    DATA = AIRTABLE_DATA['cell-types'];
 
     DATA.forEach(function(d) {
-        var cellData = AIRTABLE_DATA['cell-types'].find(function(name) {
-            return name.id === d.key;
-        })['fields'];
+        var cellData = d['fields'];
 
-        var cellCategory = AIRTABLE_DATA['cell-categories'].find(function(name) {
-                // console.log(name);
-                return name.id === cellData['Category'][0];
-            })['fields']['Name'];
+        var cellCategory = cellData['Category lookup'][0];
 
-        // var cellCategory = AIRTABLE_DATA['cell-categories'].find(function(name) {
-        //         console.log(name);
-        //         return name.id === d.key;
-        //     })['fields']['Name'];
-
-        d['start'] = d3.min(d['values'], function(v)  {
-            return v['fields']['Efficiency (%)'];
-        });
-        d['end'] = d3.max(d['values'], function(v)  {
-            return v['fields']['Efficiency (%)'];
-        });
+        d['start'] = cellData['Min lab efficiency'];
+        d['end'] = cellData['Record lab efficiency'];
+        d['maxYear'] = cellData['Record lab date'];
+        d['minYear'] = cellData['Min lab date'];
         d['change'] = d['end'] - d['start'];
         d['fullName'] = cellCategory + ' - ' + cellData['Cell type'];
         d['label'] = cellData['Cell type'];
@@ -124,10 +101,20 @@ var render = function(containerWidth) {
     renderDotChart({
         container: '#dot-chart',
         width: containerWidth,
-        data: DATA.sort(function(a,b) {
-            return b.end - a.end;
-        }),
-        labels: LABELS
+        data: d3.nest()
+            .key(function(d) {
+                return d['category'];
+            })
+            .sortValues(function(a, b) {
+                return b['end'] - a['end'];
+            })
+            .entries(DATA)
+            .map(function(d) {
+                return d.values;
+            })
+            .sort(function(a, b) {
+                return d3.max(b, function(d) { return d['end']; }) - d3.max(a, function(d) { return d['end']; });
+            })
     });
 
     // Render the chart!
@@ -136,7 +123,8 @@ var render = function(containerWidth) {
         width: containerWidth,
         data: DATA.sort(function(a,b) {
             return b.end - a.end;
-        })
+        }),
+        labels: LABELS
     });
 
     // Update iframe
