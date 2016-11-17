@@ -12,12 +12,93 @@
   }
 }
 
+@black  : #222;
+@gray   : #ddd;
+@gray1  : #ccc;
+@gray2   : #999;
+
+body {
+    padding-bottom: 1rem;
+}
+
+p {
+    color: @black;
+    font-family: "Georgia",serif;
+    font-size: 18px;
+    line-height: 25px;
+    margin: 0 0 1em;
+}
+
+#dot-chart {
+    // margin-bottom: 2em;
+    position: relative;
+
+    .labels li {
+        color: @black;
+        margin: 0;
+        padding: 0;
+    }
+
+    .labels li span {
+        margin: 0;
+        padding: 0px 3px;
+        border-width: 1px;
+        border-style: solid;
+    }
+}
+
+#dot-legend {
+    margin: 0;
+    text-align: right;
+
+    .key-item {
+        line-height: 1em;
+    }
+
+    .key-item b {
+        border-style: solid;
+        border-width: 1px;
+        width: 8px;
+        height: 8px;
+        margin-right: 3px;
+        // margin-left: 3px;
+        // margin-right: 0;
+    }
+}
+
 .axis {
     fill: #666;
     font-weight: bold;
     font-size: 12px;
 
     path { display: none; }
+}
+
+.key {
+    margin: 15px 10px;
+
+    .key-item label {
+        color: @black;
+    }
+
+    .key-item b {
+        border-radius: 7.5px;
+        -moz-border-radius: 7.5px;
+        -webkit-border-radius: 7.5px;
+    }
+}
+
+.mobile.key {
+    -moz-column-count: 2;
+    -moz-column-gap: 5px;
+    -webkit-column-count: 2;
+    -webkit-column-gap: 5px;
+    column-count: 2;
+    column-gap: 5px;
+
+    .key-item {
+        margin: 5px 0;
+    }    
 }
 
 .slopes line {
@@ -89,6 +170,10 @@
 
     .details {
         // text-align: center;
+    }
+
+    .details h4 {
+        margin: 0;
     }
 
     .big-number .big {
