@@ -4,8 +4,7 @@
 
     <!-- {% if COPY.labels.headline %}<h1>{{ COPY.labels.headline|smarty }}</h1>{% endif %}
     {% if COPY.labels.subhed %}<h2>{{ render(COPY.labels.subhed)|smarty }}</h2>{% endif %} -->
-    {% if COPY.labels.intro %}<div>{{ render(COPY.labels.intro)|smarty }}</div>{% endif %}
-    {% if COPY.labels.instructions %}<p>{{ render(COPY.labels.instructions)|smarty }}</p>{% endif %}
+    {% if COPY.labels['editorial-intro'] %}<div class="intro">{{ render(COPY.labels['editorial-intro'])|smarty }}</div>{% endif %}
     
     <h3>Categories of PV Cells</h3>
     <div id="legend"></div>
