@@ -98,13 +98,23 @@ p {
 
     .key-item {
         margin: 5px 0;
-    }    
+    }
 }
 
 .slopes line {
     stroke-width: 3px;
     stroke: #ddd;
     shape-rendering: auto;
+}
+
+.slopes .invisible {
+    stroke-width: 15px;
+    stroke: #fff;
+    opacity: 0;
+}
+
+.slopes .hovered line {
+    stroke-width: 4px;
 }
 
 .slopes circle {

@@ -510,65 +510,55 @@ var renderSlopegraph = function(config) {
     var categoryColumn = 'category';
     var changeColumn = 'change';
     var fullName = 'fullName';
-    var filteredData = config['data'].filter(function(d) { return d[changeColumn] > 5; });
+    // var filteredData = config['data'].filter(function(d) { return d[changeColumn] > 5; });
 
-    // var startLabel = config['labels']['start_label'];
-    // var endLabel = config['labels']['end_label'];
     var startLabel = d3.min(config['data'], function(series) {
-        var minDate = d3.min(series['values'], function(d) {
-            // console.log(d['fields']['Date']);
-            var minYear = d['fields']['Date'];
-            if ( !minYear ) { return; }
-            minYear = minYear.slice(-2);
+        var minYear = series['minYear'].slice(2,4);
+        if ( !minYear ) { return; }
+        // console.log(minYear);
+        if( +minYear >= 69) {
+            minYear = +('19' + minYear);
             // console.log(minYear);
-            if( +minYear >= 69) {
-                minYear = +('19' + minYear);
-                // console.log(minYear);
-                // return minYear;
-                return;
-            }
-            else {
-                minYear = +('20' + minYear);
-                // console.log(minYear);
-                return minYear;
-            } 
-        });
-        return minDate;
+            // return minYear;
+            return;
+        }
+        else {
+            minYear = +('20' + minYear);
+            // console.log(minYear);
+            return minYear;
+        } 
     });
     var endLabel = d3.max(config['data'], function(series) {
-        var maxDate = d3.max(series['values'], function(d) {
-            var maxYear = d['fields']['Date'];
-            if ( !maxYear ) { return; }
-            maxYear = maxYear.slice(-2);
-            if( +maxYear >= 69) {
-                maxYear = +('19' + maxYear);
-                // console.log(maxYear);
-                return maxYear;
-            }
-            else {
-                maxYear = +('20' + maxYear);
-                // console.log(maxYear);
-                return maxYear;
-            } 
-        });
-        return maxDate;
+        var maxYear = series['maxYear'].slice(2,4);
+        if ( !maxYear ) { return; }
+        if( +maxYear >= 69) {
+            maxYear = +('19' + maxYear);
+            // console.log(maxYear);
+            return maxYear;
+        }
+        else {
+            maxYear = +('20' + maxYear);
+            // console.log(maxYear);
+            return maxYear;
+        } 
     });
 
     var aspectWidth = 5;
-    var aspectHeight = 3;
+    var aspectHeight = 4;
 
     var margins = {
         top: 20,
-        right: 185,
+        right: 240,
         bottom: 20,
-        left: 40
+        left: 45
     };
 
     var ticksX = 2;
     var ticksY = 10;
     var roundTicksFactor = 4;
     var dotRadius = 3;
-    var labelGap = 42;
+    var labelGap = 82;
+    var connector = 5;
 
     // Mobile
     if (isSidebar) {
@@ -580,7 +570,9 @@ var renderSlopegraph = function(config) {
     } else if (isMobile) {
         aspectWidth = 2.5;
         aspectHeight = 3;
-        margins['right'] = 145;
+        dotRadius = 4;
+        margins['right'] = 160;
+        labelGap = 50;
     }
 
     // Calculate actual chart dimensions
@@ -594,7 +586,7 @@ var renderSlopegraph = function(config) {
     /*
      * Create D3 scale objects.
      */
-    var xScale = d3.scale.ordinal()
+    var xScale = d3.scale.linear()
         .domain([startLabel, endLabel])
         .range([0, chartWidth]);
 
@@ -613,12 +605,25 @@ var renderSlopegraph = function(config) {
         .range([chartHeight, 0]);
 
     var colorScale = d3.scale.ordinal()
-        .domain(_.pluck(config['data'], categoryColumn))
-        .range([COLORS['dark red'], COLORS['dark green'], COLORS['light blue'], COLORS['orange'], COLORS['teal']]);
+        .domain(_.pluck(config['data'], categoryColumn)
+            .sort(function(a, b) {
+                // console.log(a['name']);
+                return a.localeCompare(b);
+            })
+        )
+        .range([COLORS['orange'], COLORS['dark red'], COLORS['light blue'], COLORS['teal'], COLORS['dark green']]);
 
-    var changeScale = d3.scale.threshold()
-        .domain([2.5, 5])
-        .range([0.2,0.4,1]);
+    var changeScale = d3.scale.linear()
+        .domain([0,d3.max(config['data'], function (d) {
+            var timeDiff = (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4)));
+            if ( timeDiff === 0 ) {
+                return 0;
+            }
+            // console.log(d[changeColumn] / (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4))));
+            return d[changeColumn] / (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4)));
+        })])
+        .range([0.2,1]);
+
     /*
      * Create D3 axes.
      */
@@ -670,7 +675,11 @@ var renderSlopegraph = function(config) {
         .attr('class', 'key')
         .selectAll('g')
         // .data(config['data'])
-        .data(colorScale.domain())
+        // .data(colorScale.domain())
+        .data(colorScale.domain().sort(function(a, b) {
+            // console.log(a['name']);
+            return a.localeCompare(b);
+        }))
         .enter().append('li')
             .attr('class', function(d, i) {
                 return 'key-item ' + classify(d);
@@ -699,15 +708,33 @@ var renderSlopegraph = function(config) {
         .enter()
         .append('g')
             .attr('class', 'slope' )
-            .style('opacity', function(d) {
-                return changeScale(d[changeColumn]);
+            .style('opacity', function (d) {
+                var timeDiff = (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4)));
+                if ( timeDiff === 0 ) {
+                    return changeScale(0);
+                }
+                // console.log(d[changeColumn] / (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4))));
+                return changeScale(d[changeColumn] / (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4))));
             });
 
     slopes.append('line')
-        .attr('class', function(d, i) {
-            return 'line ' + classify(d[labelColumn]);
+        .attr('class', 'invisible')
+        .attr('x1', function(d) {
+            var minYear = d['minYear'].slice(2,4);
+            if ( !minYear ) { return; }
+            // console.log(startLabel);
+            if( +minYear >= 69) {
+                minYear = +('19' + minYear);
+                // console.log(minYear);
+                // return minYear;
+                return xScale(startLabel);
+            }
+            else {
+                minYear = +('20' + minYear);
+                // console.log(minYear);
+                return xScale(minYear);
+            }
         })
-        .attr('x1', xScale(startLabel))
         .attr('y1', function(d) {
             return yScale(d[startColumn]);
         })
@@ -718,6 +745,95 @@ var renderSlopegraph = function(config) {
         .style('stroke', function(d) {
             return colorScale(d[categoryColumn]);
         });
+
+    slopes.append('line')
+        .attr('class', 'invisible')
+        .attr('x1', xScale(startLabel))
+        .attr('y1', function(d) {
+            return yScale(d[startColumn]);
+        })
+        .attr('x2', function(d) {
+            var minYear = d['minYear'].slice(2,4);
+            if ( !minYear ) { return; }
+            // console.log(startLabel);
+            if( +minYear >= 69) {
+                minYear = +('19' + minYear);
+                // console.log(minYear);
+                // return minYear;
+                return xScale(startLabel);
+            }
+            else {
+                minYear = +('20' + minYear);
+                // console.log(minYear);
+                return xScale(minYear);
+            }
+        })
+        .attr('y2', function(d) {
+            return yScale(d[startColumn]);
+        });
+
+    slopes.append('line')
+        .attr('class', function(d, i) {
+            return 'line ' + classify(d[labelColumn]);
+        })
+        .attr('x1', function(d) {
+            var minYear = d['minYear'].slice(2,4);
+            if ( !minYear ) { return; }
+            // console.log(startLabel);
+            if( +minYear >= 69) {
+                minYear = +('19' + minYear);
+                // console.log(minYear);
+                // return minYear;
+                return xScale(startLabel);
+            }
+            else {
+                minYear = +('20' + minYear);
+                // console.log(minYear);
+                return xScale(minYear);
+            }
+        })
+        .attr('y1', function(d) {
+            return yScale(d[startColumn]);
+        })
+        .attr('x2', xScale(endLabel))
+        .attr('y2', function(d) {
+            return yScale(d[endColumn]);
+        })
+        .style('stroke', function(d) {
+            return colorScale(d[categoryColumn]);
+        });
+
+    slopes.append('line')
+        .attr('class', function(d, i) {
+            return 'init-line ' + classify(d[labelColumn]);
+        })
+        .attr('x1', xScale(startLabel))
+        .attr('y1', function(d) {
+            return yScale(d[startColumn]);
+        })
+        .attr('x2', function(d) {
+            var minYear = d['minYear'].slice(2,4);
+            if ( !minYear ) { return; }
+            // console.log(startLabel);
+            if( +minYear >= 69) {
+                minYear = +('19' + minYear);
+                // console.log(minYear);
+                // return minYear;
+                return xScale(startLabel);
+            }
+            else {
+                minYear = +('20' + minYear);
+                // console.log(minYear);
+                return xScale(minYear);
+            }
+        })
+        .attr('y2', function(d) {
+            return yScale(d[startColumn]);
+        })
+        .style('stroke', function(d) {
+            return colorScale(d[categoryColumn]);
+        })
+        .style('stroke-dasharray', '3, 10');
 
     /*
      * Uncomment if needed:
@@ -786,22 +902,30 @@ var renderSlopegraph = function(config) {
         d.hovered = true;
 
         el
-            .style('opacity', 1);
+            .style('opacity', 1)
+            .classed('hovered', true);
 
-        if (d[changeColumn] > 5) {
-            renderLabels();
-            return;
-        }
-        if (hovered === true) {
-            filteredData.pop(d3.select(this).datum());
-            renderLabels();
-        }
+        el.selectAll('circle')
+            .attr('r', dotRadius + 1);
 
-        filteredData.push(d);
+        el.moveToFront();
+
         renderLabels();
-        // console.log(filteredData.length);
 
-        hovered = true;
+        // if (d[changeColumn] > 5) {
+        //     renderLabels();
+        //     return;
+        // }
+        // if (hovered === true) {
+        //     filteredData.pop(d3.select(this).datum());
+        //     renderLabels();
+        // }
+
+        // filteredData.push(d);
+        // renderLabels();
+        // // console.log(filteredData.length);
+
+        // hovered = true;
     });
 
     slopes.on('mouseout', function() {
@@ -811,21 +935,41 @@ var renderSlopegraph = function(config) {
         d.hovered = false;
 
         el
-            .style('opacity', function(d) {
-                return changeScale(d[changeColumn]);
-            });
+            .style('opacity', function (d) {
+                var timeDiff = (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4)));
+                if ( timeDiff === 0 ) {
+                    return changeScale(0);
+                }
+                // console.log(d[changeColumn] / (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4))));
+                return changeScale(d[changeColumn] / (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4))));
+            })
+            .classed('hovered', false);
 
-        if (d[changeColumn] > 5) {
-            renderLabels();
-            return;
-        }
-        if (hovered === true) {
-            filteredData.pop(d3.select(this).datum());
-            renderLabels();
-            // console.log(filteredData.length);
-        }
-        hovered = false;
+        el.selectAll('circle')
+            .attr('r', dotRadius);
+
+        renderLabels();
+
+        // if (d[changeColumn] > 5) {
+        //     renderLabels();
+        //     return;
+        // }
+        // if (hovered === true) {
+        //     filteredData.pop(d3.select(this).datum());
+        //     renderLabels();
+        //     // console.log(filteredData.length);
+        // }
+        // hovered = false;
     });
+
+    // slopes.on('click', function() {
+    //     var el = d3.select(this);
+    //     var d = el.datum();
+
+    //     var selectedData = config['data'].filter(function (d) { return d.selected || d.hovered; });
+
+    //     d.selected = d.selected ? false : true;
+    // });
 
     var startValueGroup = chartElement.append('g')
         .attr('class', 'value start');
@@ -833,14 +977,20 @@ var renderSlopegraph = function(config) {
         .attr('class', 'value end');
     var labelGroup = chartElement.append('g')
         .attr('class', 'label');
+    var connectorsGroup = chartElement.append('g')
+        .attr('class', 'connector');
 
     function renderLabels() {
+        var selectedData = config['data'].filter(function (d) { return d.selected || d.hovered; });
+
+        // console.log(selectedData);
+
         /*
          * Render values.
          */
         var startValueLabels = startValueGroup
             .selectAll('text')
-            .data(filteredData, function(d) { return d[fullName]; });
+            .data(selectedData, function(d) { return d[fullName]; });
 
         startValueLabels.enter()
             .append('text');
@@ -855,7 +1005,7 @@ var renderSlopegraph = function(config) {
                 return yScale(d[startColumn]);
             })
             .attr('text-anchor', 'end')
-            .attr('dx', -6)
+            .attr('dx', -6 - connector)
             .attr('dy', 3)
             .attr('class', function(d) {
                 return classify(d[labelColumn]);
@@ -875,7 +1025,7 @@ var renderSlopegraph = function(config) {
 
         var endValueLabels = endValueGroup
             .selectAll('text')
-            .data(filteredData, function(d) { return d[fullName]; });
+            .data(selectedData, function(d) { return d[fullName]; });
 
         endValueLabels.enter()
             .append('text');
@@ -885,7 +1035,7 @@ var renderSlopegraph = function(config) {
             });
 
         endValueLabels
-            .attr('x', xScale(endLabel))
+            .attr('x', xScale(endLabel) + connector)
             .attr('y', function(d) {
                 return yScale(d[endColumn]);
             })
@@ -896,11 +1046,11 @@ var renderSlopegraph = function(config) {
                 return classify(d[labelColumn]);
             })
             .text(function(d) {
-                if (isSidebar) {
-                    return d[endColumn].toFixed(0) + '%';
+                if (isSidebar  || isMobile) {
+                    return d[endColumn].toFixed(1) + '%';
                 }
 
-                return d[endColumn].toFixed(1) + '%';
+                return d[endColumn].toFixed(1) + '%' + ' (+' + (d[endColumn] - d[startColumn]).toFixed(1)+ ')';
             })
             .style('font-weight', function(d) {
                 return d.hovered ? 'bold' : 'normal';
@@ -913,43 +1063,54 @@ var renderSlopegraph = function(config) {
          */
         var textLabels = labelGroup
             .selectAll('text')
-            .data(filteredData, function(d) { return d[fullName]; });
+            .data(selectedData, function(d) { return d[fullName]; });
 
         textLabels.enter()
-            .append('text');
-
-        textLabels.sort(function(a,b) {
-                return b['end'] - a['end'];
-            });
-
-        textLabels
+            .append('text')
+            .attr('class', function(d, i) {
+                return classify(d[labelColumn]);
+            })
             .attr('x', xScale(endLabel))
             .attr('y', function(d) {
                 return yScale(d[endColumn]);
             })
             .attr('text-anchor', 'begin')
             .attr('dx', function(d) {
-                return labelGap;
+                return labelGap + (connector * 2);
             })
             .attr('dy', function(d) {
                 return 3;
             })
-            .attr('class', function(d, i) {
-                return classify(d[labelColumn]);
-            })
             .text(function(d) {
                 return d[labelColumn];
             })
+            .call(wrapText, (margins['right'] - labelGap - 15), 12);
+
+        textLabels.sort(function(a,b) {
+                return b['end'] - a['end'];
+            });
+
+        textLabels
+            .attr('y', function(d) {
+                return yScale(d[endColumn]);
+            })
+            .attr('dy', function(d) {
+                return 3;
+            })
             .style('font-weight', function(d) {
                 return d.hovered ? 'bold' : 'normal';
-            })
-            .call(wrapText, (margins['right'] - labelGap), 16);
+            });
+
+        textLabels.selectAll('tspan')
+            .attr('y', function(d) {
+                return yScale(d[endColumn]);
+            });
 
         textLabels.exit().remove();
 
         // Function for repositioning overlapping labels
         var alpha = 0.5; // how much to move labels in each iteration
-        var spacing = 16; // miminum space required
+        var spacing = 14; // miminum space required
 
         function relax(items) {
             var again = false;
@@ -1137,7 +1298,7 @@ var wrapText = function(texts, width, lineHeight) {
                     .attr('x', x)
                     .attr('y', y)
                     .attr('dx', dx + 'px')
-                    .attr('dy', lineNumber * lineHeight + 'px')
+                    .attr('dy', (dy + (lineNumber * lineHeight)) + 'px')
                     .attr('text-anchor', 'begin')
                     .text(word);
             }

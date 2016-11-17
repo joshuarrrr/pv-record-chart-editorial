@@ -15,7 +15,9 @@ var COLORS = {
     'dark red': '#D40A06',
     'light blue': '#5A95D4',
     'teal': '#3FBEB6',
-    'dark green': '#48B44C'
+    'dark green': '#48B44C',
+    'black': '#222',
+    'white': '#FFF'
 };
 
 /*
