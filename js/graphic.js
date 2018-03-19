@@ -502,6 +502,7 @@ var renderSlopegraph = function(config) {
 
     var startLabel = d3.min(config['data'], function(series) {
         var minYear = series['minYear'].slice(2,4);
+        // console.log(minYear)
         if ( !minYear ) { return; }
         // console.log(minYear);
         if( +minYear >= 69) {
@@ -578,6 +579,8 @@ var renderSlopegraph = function(config) {
         .domain([startLabel, endLabel])
         .range([0, chartWidth]);
 
+    // console.log(xScale.domain());
+
     var min = d3.min(config['data'], function(d) {
         var rowMin = d3.min([d[startColumn], d[endColumn]]);
         return Math.floor(rowMin / roundTicksFactor) * roundTicksFactor;
@@ -603,12 +606,14 @@ var renderSlopegraph = function(config) {
 
     var changeScale = d3.scale.linear()
         .domain([0,d3.max(config['data'], function (d) {
-            var timeDiff = (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4)));
+            var timeDiff = (xScale(endLabel) - xScale(+d['minYear'].slice(0,4)));
             if ( timeDiff === 0 ) {
                 return 0;
             }
-            // console.log(d[changeColumn] / (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4))));
-            return d[changeColumn] / (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4)));
+            // console.log(d['minYear'].slice(0,4));
+            // console.log(d[changeColumn], timeDiff);
+            // console.log(d[changeColumn] / timeDiff);
+            return d[changeColumn] / timeDiff;
         })])
         .range([0.2,1]);
 
@@ -697,12 +702,15 @@ var renderSlopegraph = function(config) {
         .append('g')
             .attr('class', 'slope' )
             .style('opacity', function (d) {
-                var timeDiff = (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4)));
+                var timeDiff = (xScale(endLabel) - xScale(+d['minYear'].slice(0,4)));
                 if ( timeDiff === 0 ) {
                     return changeScale(0);
                 }
-                // console.log(d[changeColumn] / (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4))));
-                return changeScale(d[changeColumn] / (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4))));
+                // console.log(d[fullName])
+                // console.log(d['minYear'].slice(0,4), d['maxYear'].slice(0,4), timeDiff)
+                // console.log(d[changeColumn] / timeDiff);
+                // console.log(changeScale(d[changeColumn] / timeDiff));
+                return changeScale(d[changeColumn] / timeDiff);
             });
 
     slopes.append('line')
@@ -881,8 +889,6 @@ var renderSlopegraph = function(config) {
             return colorScale(d[categoryColumn]);
         });
 
-    var hovered = false;
-
     slopes.on('mouseover', function() {
         var el = d3.select(this);
         var d = el.datum();
@@ -900,20 +906,6 @@ var renderSlopegraph = function(config) {
 
         renderLabels();
 
-        // if (d[changeColumn] > 5) {
-        //     renderLabels();
-        //     return;
-        // }
-        // if (hovered === true) {
-        //     filteredData.pop(d3.select(this).datum());
-        //     renderLabels();
-        // }
-
-        // filteredData.push(d);
-        // renderLabels();
-        // // console.log(filteredData.length);
-
-        // hovered = true;
     });
 
     slopes.on('mouseout', function() {
@@ -924,12 +916,12 @@ var renderSlopegraph = function(config) {
 
         el
             .style('opacity', function (d) {
-                var timeDiff = (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4)));
+                var timeDiff = (xScale(endLabel) - xScale(+d['minYear'].slice(0,4)));
                 if ( timeDiff === 0 ) {
                     return changeScale(0);
                 }
-                // console.log(d[changeColumn] / (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4))));
-                return changeScale(d[changeColumn] / (xScale(d['maxYear'].slice(2,4)) - xScale(d['minYear'].slice(2,4))));
+                // console.log(d[changeColumn] / timeDiff);
+                return changeScale(d[changeColumn] / timeDiff);
             })
             .classed('hovered', false);
 
@@ -938,26 +930,7 @@ var renderSlopegraph = function(config) {
 
         renderLabels();
 
-        // if (d[changeColumn] > 5) {
-        //     renderLabels();
-        //     return;
-        // }
-        // if (hovered === true) {
-        //     filteredData.pop(d3.select(this).datum());
-        //     renderLabels();
-        //     // console.log(filteredData.length);
-        // }
-        // hovered = false;
     });
-
-    // slopes.on('click', function() {
-    //     var el = d3.select(this);
-    //     var d = el.datum();
-
-    //     var selectedData = config['data'].filter(function (d) { return d.selected || d.hovered; });
-
-    //     d.selected = d.selected ? false : true;
-    // });
 
     var startValueGroup = chartElement.append('g')
         .attr('class', 'value start');
@@ -1237,7 +1210,14 @@ var renderSlopegraph = function(config) {
 
     }
 
-    config['data'].filter(function (d) { return d[changeColumn] > 7; }).forEach(function(d) {
+    config['data'].filter(function (d) {
+        var timeDiff = (xScale(endLabel) - xScale(+d['minYear'].slice(0,4)));
+        if ( timeDiff === 0 ) {
+            return changeScale(0);
+        }
+        return changeScale(d[changeColumn] / timeDiff) > .5;
+        // return d[changeColumn] > 7;
+    }).forEach(function(d) {
         d.selected = true;
     });
 
