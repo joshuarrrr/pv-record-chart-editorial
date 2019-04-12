@@ -542,7 +542,7 @@ var renderSlopegraph = function(config) {
         left: 45
     };
 
-    var ticksX = 2;
+    var ticksX = 3;
     var ticksY = 10;
     var roundTicksFactor = 4;
     var dotRadius = 3;
